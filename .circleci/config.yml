@@ -1,8 +1,29 @@
 version: 2.1
 jobs:
+  pr_check:
+    docker:
+      - image: circleci/node:11.1.0 # the primary container, where your job's commands are run
+    steps:
+      - checkout
+      - run:
+          name: Gradle Build # run the `echo` command
+          command: |
+            echo "hello world"
+
   build:
     docker: 
       - image: circleci/node:11.1.0 # the primary container, where your job's commands are run
     steps:
       - checkout # check out the code in the project directory
-      - run: echo "hello world" # run the `echo` command
+      - run:
+          name: Gradle Build # run the `echo` command
+          command: |
+            echo "hello world" 
+
+workflows:
+  pr-check-workflow:
+    jobs:
+      - pr_check
+  build-and-deploy-workflow:
+    jobs:
+      - build
