@@ -28,7 +28,7 @@ jobs:
         environment:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_DATABASE: cloud_comp
-          MYSQL_USER: root
+          MYSQL_USER: admin
           MYSQL_PASSWORD: password
     steps:
       - checkout: # check out the code in the project directory
