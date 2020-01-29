@@ -84,7 +84,10 @@ jobs:
 workflows:
   pr-check:
     jobs:
-      - pr_check
+      - pr_check:
+          filters:
+            branches:
+              only: /^pull\/.*$/
   build_deploy:
     jobs:
       - build:
