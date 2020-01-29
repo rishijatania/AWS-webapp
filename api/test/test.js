@@ -39,7 +39,7 @@ describe("User", () => {
                 .get('/v1/user/self')
                 .auth('rishi@gmail.com','svsfv')
                 .end((err, res) => {
-                    res.should.have.status(400);
+                    res.should.have.status(401);
                     done();
                 });
         });

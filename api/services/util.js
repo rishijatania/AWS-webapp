@@ -16,7 +16,7 @@ module.exports.ReE = function(res, err, code){ // Error Web Response
 
     if(typeof code !== 'undefined') res.statusCode = code;
 
-    return res.json("");
+    return res.json(err);
 };
 
 module.exports.ReS = function(res, data, code){ // Success Web Response
