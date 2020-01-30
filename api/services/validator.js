@@ -12,6 +12,15 @@ const createBillValidator = () => {
 	]
 }
 
+const createUserValidator = () => {
+	return [
+		body('first_name').exists().isString(),
+		body('last_name').exists().isString(),
+		body('password').exists().isString(),
+		body('email_address').exists().isString().isEmail(),
+	]
+}
+
 const getBillValidator = () => {
 	return [
 		param('id').exists().isUUID()
@@ -55,5 +64,6 @@ module.exports = {
 	createBillValidator,
 	updateBillValidator,
 	getBillValidator,
-  	validate
+	validate,
+	createUserValidator
 }
