@@ -6,9 +6,7 @@ const { searchByEmail } = require('./user.controller');
 const createBill = async function(req, res){
     const body = req.body;
 
-	//Add field missing check , check for due date greateer than bill date,  
 	//validate like if due_date pass the current date should we keep the status as past_due and validat, 
-	//no validation on categories. Ideally you would remove duplicates instead of bad request.
 
 	let err, user, bill;
 	//delete unwanted fields
@@ -16,6 +14,13 @@ const createBill = async function(req, res){
 	// delete body.account_created;
 	//Round of to 2 decimal
 	body.amount_due= body.amount_due.toFixed(2);
+
+	if(Date.parse(body.due_date)<Date.parse(body.bill_date)){
+		return ReE(res, {error:{msg: "Due Date should be after the Bill date"}} , 400);
+	}
+
+	body.categories= body.categories.filter( onlyUnique );
+
 	[err, user] = await searchByEmail(req);
 	if(err){
 		return ReE(res, {error:{msg: err.message}} , 400);
@@ -114,7 +119,7 @@ module.exports.deleteBillById = deleteBillById;
 
 const updateBillById = async function(req, res){
 	const body = req.body;
-
+	
 	let err, user, bill,success,msg;
 	console.log(req.params.id);
 	[err, bill] = await searchBillById(req.params.id);
@@ -128,6 +133,15 @@ const updateBillById = async function(req, res){
 		return ReE(res, {error:{msg: "Unauthorized : Authentication error"}} , 401)
 	}
 	
+	//Round of to 2 decimal
+	body.amount_due= body.amount_due.toFixed(2);
+
+	if(Date.parse(body.due_date)<Date.parse(body.bill_date)){
+		return ReE(res, {error:{msg: "Due Date should be after the Bill date"}} , 400);
+	}
+
+	body.categories= body.categories.filter( onlyUnique );
+
 	bill.vendor=body.vendor;
 	bill.bill_date= body.bill_date;
 	bill.due_date=body.due_date;
@@ -145,3 +159,7 @@ const updateBillById = async function(req, res){
 	return ReS(res, success.toWeb(), 200);
 };
 module.exports.updateBillById = updateBillById;
+
+function onlyUnique(value, index, self) { 
+    return self.indexOf(value) === index;
+}
