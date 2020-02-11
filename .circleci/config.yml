@@ -11,14 +11,15 @@ executors:
           DB_DIALECT: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
-          DB_NAME: cloud_comp
-          DB_USER: root
-          DB_PSWD: password
+          DB_NAME: ${DB_NAME}
+          DB_USER: ${DB_USER}
+          DB_PSWD: ${DB_PSWD}
       - image: circleci/mysql:8.0.15
         environment:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: cloud_comp
-          MYSQL_USER: admin
+          MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+          MYSQL_DATABASE: ${DB_NAME}
+          MYSQL_USER: ${MYSQL_USER}
+          MYSQL_PASSWORD: ${MYSQL_PASSWORD}
 
 commands:
   install-run-npm:
