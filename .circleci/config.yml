@@ -24,6 +24,9 @@ commands:
   install-run-npm:
     steps:
       - run:
+          name: Print
+          command: echo $MYSQL_DATABASE
+      - run:
           name: update-npm
           command: 'sudo npm install -g npm@latest'
       - restore_cache: # special step to restore the dependency cache
