@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   image-tag:
     type: string
-    default: $DB_NAME_1
+    default: ${DB_NAME_1}
 
 executors:
   node-mysql-image: # declares a reusable executor
