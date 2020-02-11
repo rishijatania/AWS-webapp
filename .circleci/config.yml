@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 executors:
   node-mysql-image: # declares a reusable executor
@@ -11,7 +11,7 @@ executors:
           DB_DIALECT: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
-          DB_NAME: $DB_NAME
+          DB_NAME: cloud_comp
           DB_USER: root
           DB_PSWD: password
       - image: circleci/mysql:8.0.15
