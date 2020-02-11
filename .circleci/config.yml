@@ -1,10 +1,5 @@
 version: 2.1
 
-parameters:
-  image-tag:
-    type: string
-    default: ${DB_NAME_1}
-
 executors:
   node-mysql-image: # declares a reusable executor
     working_directory: ~/webapp/api # directory where steps will run
@@ -16,7 +11,7 @@ executors:
           DB_DIALECT: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
-          DB_NAME: << pipeline.parameters.image-tag >>
+          DB_NAME: cloud_comp
           DB_USER: root
           DB_PSWD: password
       - image: circleci/mysql:8.0.15
@@ -28,9 +23,6 @@ executors:
 commands:
   install-run-npm:
     steps:
-      - run: 
-          name: Print
-          command: echo ${DB_NAME}
       - run:
           name: update-npm
           command: 'sudo npm install -g npm@latest'
