@@ -11,21 +11,18 @@ executors:
           DB_DIALECT: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
-          # DB_NAME: cloud_comp
-          # DB_USER: root
-          # DB_PSWD: password
+          DB_NAME: cloud_comp
+          DB_USER: root
+          DB_PSWD: password
       - image: circleci/mysql:8.0.15
-        # environment:
-          # MYSQL_ROOT_PASSWORD: password
-          # MYSQL_DATABASE: cloud_comp
-          # MYSQL_USER: admin
+        environment:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: cloud_comp
+          MYSQL_USER: admin
 
 commands:
   install-run-npm:
     steps:
-      - run:
-          name: Print
-          command: echo $MYSQLDATABASE
       - run:
           name: update-npm
           command: 'sudo npm install -g npm@latest'
