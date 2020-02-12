@@ -1,4 +1,4 @@
-const { User, Bill }    = require('../models');
+const { User, Bill, File }    = require('../models');
 const authService       = require('../services/auth');
 const { to, ReE, ReS }  = require('../services/util');
 const { searchByEmail } = require('./user.controller');
@@ -6,12 +6,8 @@ const { searchByEmail } = require('./user.controller');
 const createBill = async function(req, res){
     const body = req.body;
 
-	//validate like if due_date pass the current date should we keep the status as past_due and validat, 
-
 	let err, user, bill;
-	//delete unwanted fields
-	// delete body.account_updated;
-	// delete body.account_created;
+
 	//Round of to 2 decimal
 	body.amount_due= body.amount_due.toFixed(2);
 
@@ -33,8 +29,10 @@ const createBill = async function(req, res){
 		console.log(err.message);
 		return ReE(res, {error:{msg: err.message}} , 400);
 	}
-
-	return ReS(res, bill.toWeb(), 201);
+	bill=bill.toWeb();
+	bill.attachment={};
+	// console.log(bill.toWeb());
+	return ReS(res, bill, 201);
 	
 };
 module.exports.createBill = createBill;
@@ -48,13 +46,21 @@ const getBillsByUser = async function(req, res){
 		return ReE(res, {error:{msg: err.message}} , 400);
 	}
 
-	[err, bill] = await to(Bill.findAll({where: {owner_id: user.id}}));
+	[err, bill] = await to(Bill.findAll({where: {owner_id: user.id},include:[{model: File,
+		as: 'attachment' // specifies how we want to be able to access our joined rows on the returned data
+	  }]}));
 	if (err || !bill ) {
 		console.log(err.message);
 		return ReE(res, {error:{msg: err.message}} , 400);
 	}
 	let bills = [];
-	bill.forEach((item)=>bills.push(item.toWeb()));
+	bill.forEach((item)=>{
+		item=item.toWeb();
+		if(item.attachment===null){
+			item['attachment']={};		
+		}
+		bills.push(item);
+	});
 	return ReS(res, bills, 200);
 
 };
@@ -75,14 +81,19 @@ const getBillById = async function(req, res){
 	}
 	if(user.id!==bill.owner_id){
 		return ReE(res, {error:{msg: "Unauthorized : Authentication error"}} , 401);
-	}		
-	return ReS(res, bill.toWeb(), 200);
+	}
+	bill=bill.toWeb();
+	if(bill.attachment===null){
+		bill['attachment']={};		
+	}
+	return ReS(res,bill , 200);
 		
 };
 module.exports.getBillById = getBillById;
 
 const searchBillById = async function(id){
-	return await to(Bill.findByPk(id));	
+	console.log(id)
+	return await to(Bill.findOne({where : {id:id}, include:'attachment'}));	
 };
 
 module.exports.searchBillById = searchBillById;

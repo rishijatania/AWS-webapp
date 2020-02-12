@@ -102,3 +102,9 @@ dist
 
 # TernJS port file
 .tern-port
+
+# ignore files in folder public
+public/assets/*
+
+# but keep the folder
+!.keep

@@ -1,5 +1,5 @@
 const { check, body, param, validationResult } = require('express-validator');
-const { to, ReE, ReS }  = require('../services/util');
+const { ReE }  = require('../services/util');
 
 const createBillValidator = () => {
 	return [
@@ -25,6 +25,21 @@ const getBillValidator = () => {
 	return [
 		param('id').exists().isUUID()
 	]
+}
+
+const getFileValidator = () => {
+	return [
+		param('fid').exists().isUUID(),
+		param('id').exists().isUUID()
+	]
+}
+
+const fileUploadValidator = (req,res,next) => {
+	console.log(req.file);
+	if(!req.file){
+		return ReE(res, {error:{msg: 'File Upload Error'}} , 400);
+	}
+	next()
 }
 
 const updateBillValidator = () => {
@@ -65,5 +80,7 @@ module.exports = {
 	updateBillValidator,
 	getBillValidator,
 	validate,
-	createUserValidator
+	createUserValidator,
+	fileUploadValidator,
+	getFileValidator
 }
