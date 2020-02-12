@@ -188,7 +188,19 @@ const updateBillById = async function(req, res){
 		msg = err.message.includes('Validation error')? err.message : 'Database Operation Error';
 		return ReE(res, {error:{msg: msg} }, 400);
 	}
-	return ReS(res, success.toWeb(), 200);
+
+	success=success.toWeb();
+	if(success.attachment===null){
+		success['attachment']={};		
+	}else{
+		success.attachment.bill_id = undefined;
+		success.attachment.file_size = undefined;
+		success.attachment.file_type= undefined;
+		success.attachment.encoding= undefined;
+		success.attachment.checksum=undefined;
+	}
+
+	return ReS(res, success, 200);
 };
 module.exports.updateBillById = updateBillById;
 
