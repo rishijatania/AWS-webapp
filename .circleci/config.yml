@@ -14,6 +14,7 @@ executors:
           DB_NAME: cloud_comp
           DB_USER: root
           DB_PSWD: password
+          FILE_UPLOAD_PATH: /public/assets/
       - image: circleci/mysql:8.0.15
         environment:
           MYSQL_ROOT_PASSWORD: password

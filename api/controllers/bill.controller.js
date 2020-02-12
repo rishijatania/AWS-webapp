@@ -2,6 +2,9 @@ const { User, Bill, File }    = require('../models');
 const authService       = require('../services/auth');
 const { to, ReE, ReS }  = require('../services/util');
 const { searchByEmail } = require('./user.controller');
+const CONFIG = require('../config/config');
+const path = require('path');
+const fs = require('fs');
 
 const createBill = async function(req, res){
     const body = req.body;
@@ -58,6 +61,12 @@ const getBillsByUser = async function(req, res){
 		item=item.toWeb();
 		if(item.attachment===null){
 			item['attachment']={};		
+		}else{
+			item.attachment.bill_id = undefined;
+			item.attachment.file_size = undefined;
+			item.attachment.file_type= undefined;
+			item.attachment.encoding= undefined;
+			item.attachment.checksum=undefined;
 		}
 		bills.push(item);
 	});
@@ -85,6 +94,12 @@ const getBillById = async function(req, res){
 	bill=bill.toWeb();
 	if(bill.attachment===null){
 		bill['attachment']={};		
+	}else{
+		bill.attachment.bill_id = undefined;
+		bill.attachment.file_size = undefined;
+		bill.attachment.file_type= undefined;
+		bill.attachment.encoding= undefined;
+		bill.attachment.checksum=undefined;
 	}
 	return ReS(res,bill , 200);
 		
@@ -100,7 +115,7 @@ module.exports.searchBillById = searchBillById;
 
 const deleteBillById = async function(req, res){
     const body = req.body;
-	let err, user, bill;
+	let err, user, bill,success;
 	console.log(req.params.id);
 
 	[err, bill] = await searchBillById(req.params.id);
@@ -118,11 +133,17 @@ const deleteBillById = async function(req, res){
 		return ReE(res, {error:{msg: "Unauthorized : Authentication error"}},401);
 	}
 	
-	[err, bill]= await to(Bill.destroy({where:{id: req.params.id, owner_id:user.id}}));
+	[err, success]= await to(Bill.destroy({where:{id: req.params.id, owner_id:user.id}}));
 
-	if (err || bill===0) {
+	if (err || success===0) {
 		return ReE(res, {error:{msg:'Database Operation Error' }},500);
-	}		
+	}
+	if(bill.attachment!==null){
+		err=deleteFileFromDisk(bill);
+		if(err){
+			return ReE(res,err,500);
+		}
+	}
 	return ReS(res, {}, 204);
 };
 
@@ -174,3 +195,18 @@ module.exports.updateBillById = updateBillById;
 function onlyUnique(value, index, self) { 
     return self.indexOf(value) === index;
 }
+
+const deleteFileFromDisk= function(bill){
+	let deletefrom = path.join(process.cwd(),'/',bill.attachment.url);
+	fs.unlink(deletefrom,(err) =>{
+		if(err){
+			return {error:{msg:'File Operation Error' }};
+		}
+	});
+	fs.rmdir(process.cwd() + CONFIG.file_upload_path + bill.id,(err) =>{
+		if(err){
+			return {error:{msg:'File Operation Error' }};
+		}
+	});
+}
+module.exports.deleteFileFromDisk = deleteFileFromDisk;
