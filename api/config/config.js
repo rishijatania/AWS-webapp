@@ -12,4 +12,5 @@ CONFIG.db_name = process.env.DB_NAME;
 CONFIG.db_user = process.env.DB_USER;
 CONFIG.db_password = process.env.DB_PSWD;
 
+CONFIG.file_upload_path = process.env.FILE_UPLOAD_PATH
 module.exports = CONFIG;

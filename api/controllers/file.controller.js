@@ -2,8 +2,7 @@ const { User, Bill, File }    = require('../models');
 const authService       = require('../services/auth');
 const { to, ReE, ReS }  = require('../services/util');
 const { searchByEmail } = require('./user.controller');
-const { searchBillById } = require('./bill.controller');
-const path = require('path');
+const { searchBillById,deleteFileFromDisk } = require('./bill.controller');
 const os = require('os');
 const fs = require('fs');
 const md5 = require('md5');
@@ -79,7 +78,8 @@ const getFileById = async function(req, res){
 	bill.attachment.bill_id = undefined;
 	bill.attachment.file_size = undefined;
     bill.attachment.file_type= undefined;
-    bill.attachment.encoding= undefined;
+	bill.attachment.encoding= undefined;
+	bill.attachment.checksum=undefined;
 	return ReS(res, bill.attachment.toWeb(), 200);
 		
 };
@@ -111,17 +111,10 @@ const deleteFileById = async function(req, res){
 	if(file===0){
 		return ReE(res, {error:{msg:'File Not Found' }},404);
 	}	
-	let deletefrom = path.join(process.cwd(),'/',bill.attachment.url);
-	fs.unlink(deletefrom,(err) =>{
-		if(err){
-			return ReE(res, {error:{msg:'File Operation Error' }},500);
-		}
-	});
-	fs.rmdir(process.cwd() + '/public/assets/' + bill.id,(err) =>{
-		if(err){
-			return ReE(res, {error:{msg:'File Operation Error' }},500);
-		}
-	});
+	err=deleteFileFromDisk(bill);
+	if(err){
+		return ReE(res,err,500);
+	}
 	
 	return ReS(res, {}, 204);
 };

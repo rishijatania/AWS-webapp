@@ -34,7 +34,7 @@ var upload;
     let storage = multer.diskStorage({
         destination: (req, file, cb) => {
 			console.log(req.params.id);
-			const dir = `./public/assets/${req.params.id}`;
+			const dir = '.'+CONFIG.file_upload_path + req.params.id;
 			fs.exists(dir, exist => {
 				if (!exist) {
 					return fs.mkdir(dir, error => cb(error, dir))
