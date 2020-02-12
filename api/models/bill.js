@@ -33,6 +33,10 @@ module.exports = (sequelize, DataTypes) => {
         createdAt: 'created_ts'
     });
 
+	Model.associate = function(models){
+		Model.hasOne(models.File,{foreignKey: 'bill_id', as: 'attachment'});
+	};
+
     Model.prototype.toWeb = function () {
         let json = this.toJSON();
         return json;

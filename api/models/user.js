@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     });
 
 	Model.associate = function(models){
-		Model.hasMany(models.Bill,{foreignKey: 'owner_id', as: 'bills' });
+		Model.hasMany(models.Bill,{foreignKey: 'owner_id'});
 	};
 
     Model.beforeSave(async (user, options) => {
