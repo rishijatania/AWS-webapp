@@ -5,23 +5,22 @@ const UserController = require('../controllers/user.controller');
 const BillController = require('../controllers/bill.controller');
 const FileController = require('../controllers/file.controller');
 const { createBillValidator, getBillValidator, updateBillValidator, createUserValidator, fileUploadValidator, getFileValidator, validate } = require('../services/validator');
-const { upload } = require("../app");
-// const { fileUpload } = require("../services/util");
+const { upload, s3_upload } = require("../app");
 
 //User
-router.post('/user', createUserValidator(),validate, UserController.create); 
+router.post('/user', createUserValidator(), validate, UserController.create);
 router.get('/user/self', auth.basicAuth, UserController.get);
-router.put('/user/self', createUserValidator(),validate, auth.basicAuth, UserController.update);
+router.put('/user/self', createUserValidator(), validate, auth.basicAuth, UserController.update);
 
 //Bill
-router.post('/bill',  createBillValidator(), validate, auth.basicAuth, BillController.createBill);
+router.post('/bill', createBillValidator(), validate, auth.basicAuth, BillController.createBill);
 router.get('/bills', auth.basicAuth, BillController.getBillsByUser);
 router.get('/bill/:id', getBillValidator(), validate, auth.basicAuth, BillController.getBillById);
 router.put('/bill/:id', updateBillValidator(), validate, auth.basicAuth, BillController.updateBillById);
 router.delete('/bill/:id', getBillValidator(), validate, auth.basicAuth, BillController.deleteBillById);
 
 //File
-router.post('/bill/:id/file', upload, fileUploadValidator, getBillValidator(), validate, auth.basicAuth, FileController.createFile);
+router.post('/bill/:id/file', upload, fileUploadValidator, s3_upload, getBillValidator(), validate, auth.basicAuth, FileController.createFile);
 router.get('/bill/:id/file/:fid', getFileValidator(), validate, auth.basicAuth, FileController.getFileById);
 router.delete('/bill/:id/file/:fid', getFileValidator(), validate, auth.basicAuth, FileController.deleteFileById);
 
