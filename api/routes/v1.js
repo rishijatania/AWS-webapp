@@ -5,7 +5,7 @@ const UserController = require('../controllers/user.controller');
 const BillController = require('../controllers/bill.controller');
 const FileController = require('../controllers/file.controller');
 const { createBillValidator, getBillValidator, updateBillValidator, createUserValidator, fileUploadValidator, getFileValidator, validate } = require('../services/validator');
-const { upload, s3_upload } = require("../app");
+const { upload } = require("../app");
 
 //User
 router.post('/user', createUserValidator(), validate, UserController.create);
@@ -20,7 +20,7 @@ router.put('/bill/:id', updateBillValidator(), validate, auth.basicAuth, BillCon
 router.delete('/bill/:id', getBillValidator(), validate, auth.basicAuth, BillController.deleteBillById);
 
 //File
-router.post('/bill/:id/file', upload, fileUploadValidator, s3_upload, getBillValidator(), validate, auth.basicAuth, FileController.createFile);
+router.post('/bill/:id/file', upload, fileUploadValidator, getBillValidator(), validate, auth.basicAuth, FileController.createFile);
 router.get('/bill/:id/file/:fid', getFileValidator(), validate, auth.basicAuth, FileController.getFileById);
 router.delete('/bill/:id/file/:fid', getFileValidator(), validate, auth.basicAuth, FileController.deleteFileById);
 

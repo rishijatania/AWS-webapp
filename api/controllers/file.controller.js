@@ -7,12 +7,11 @@ const os = require('os');
 const fs = require('fs');
 const md5 = require('md5');
 const CONFIG = require('../config/config');
-const { s3_delete } = require("../app");
+const { s3_upload, s3_delete } = require("../app");
 
 const createFile = async function (req, res) {
 	var file = {};
 	file.file_name = req.file.originalname;
-	file.url = req.file.path;
 	file.file_size = req.file.size;
 	file.file_type = req.file.mimetype;
 	file.encoding = req.file.encoding;
@@ -42,6 +41,13 @@ const createFile = async function (req, res) {
 	buff = (CONFIG.app === 'prod') ? file.buffer : fs.readFileSync(file.url);
 	file.checksum = md5(buff);
 
+	let uploaderr,success ;
+	[uploaderr,success] = await to(s3_upload(req));
+	if (uploaderr) {
+		console.log(uploaderr);
+		return ReE(res, {uploaderr} , 400);
+	}
+	file.url = req.file.path;
 	[err, file] = await to(File.create(file));
 	if (err || !file) {
 		console.log(err.message);

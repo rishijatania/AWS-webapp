@@ -63,7 +63,7 @@ if (CONFIG.app === 'prod') {
 
 module.exports.upload = upload;
 
-const s3_upload = async function (req, res, next) {
+const s3_upload = async function (req) {
 	if (CONFIG.app === 'prod') {
 		const file = req.file;
 		console.log("in s3 upload");
@@ -77,11 +77,10 @@ const s3_upload = async function (req, res, next) {
 		try {
 			data = await s3.upload(params).promise();
 		} catch (err) {
-			return next(err);
+			return err;
 		}
 		req.file.path = data.Location;
 	}
-	return next();
 }
 
 module.exports.s3_upload = s3_upload;
