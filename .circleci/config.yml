@@ -54,12 +54,10 @@ commands:
       - run:
           name: Build Deployment Artifacts
           command: |
-            pwd
             cd /home/circleci
             mkdir codedeploy_artifact
             sudo apt install zip -y
             zip -r webapp-${CIRCLE_BUILD_NUM}.zip /home/circleci/webapp
-            ls -al
             mv webapp-${CIRCLE_BUILD_NUM}.zip /home/circleci/codedeploy_artifact
 
   copy-artifacts-to-storage:
@@ -93,7 +91,7 @@ commands:
   run-store-tests:
     steps:
       - run: # run tests
-          name: test
+          name: Run Tests
           command: npm test
       # - store_artifacts: # special step to save test results as as artifact
       #     # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
@@ -122,6 +120,7 @@ jobs:
       - db-wait
       - run-store-tests
       - build-deployment-artifacts
+      - copy-artifacts-to-storage
 
 workflows:
   pr-check:
