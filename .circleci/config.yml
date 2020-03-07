@@ -62,7 +62,7 @@ commands:
             ls -al
             mv webapp-${CIRCLE_BUILD_NUM}.zip /home/circleci/codedeploy_artifact
 
-  copy-artifacts-to-S3:
+  copy-artifacts-to-storage:
     steps:
       - run:
           name: Copy Build Atrifact to AWS S3
