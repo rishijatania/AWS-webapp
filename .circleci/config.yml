@@ -43,8 +43,7 @@ commands:
       - run:
           name: Install awscli
           command: |
-            sudo apt update 
-            sudo apt install curl -y
+            sudo apt update
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
@@ -56,7 +55,6 @@ commands:
           command: |
             cd /home/circleci
             mkdir codedeploy_artifact
-            sudo apt install zip -y
             zip -r webapp-${CIRCLE_BUILD_NUM}.zip /home/circleci/webapp
             mv webapp-${CIRCLE_BUILD_NUM}.zip /home/circleci/codedeploy_artifact
 
@@ -65,7 +63,6 @@ commands:
       - run:
           name: Copy Build Atrifact to AWS S3
           command: |
-            pwd
             aws s3 sync /home/circleci/codedeploy_artifact s3://${S3_CODEDEPLOY_BUCKET}
 
   code-deploy:
