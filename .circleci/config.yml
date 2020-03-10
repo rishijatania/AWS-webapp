@@ -55,7 +55,9 @@ commands:
           command: |
             cd /home/circleci
             mkdir codedeploy_artifact
-            zip -r webapp-${CIRCLE_BUILD_NUM}.zip webapp/api webapp/appspec.yml webapp/codedeploy/*.sh
+            cd /home/circleci/webapp
+            cp codedeploy/*.sh .
+            zip -r webapp-${CIRCLE_BUILD_NUM}.zip api appspec.yml *.sh
             mv webapp-${CIRCLE_BUILD_NUM}.zip /home/circleci/codedeploy_artifact
 
   upload-artifacts-to-storage:
@@ -113,10 +115,7 @@ jobs:
     steps:
       - checkout: # check out the code in the project directory
           path: ~/webapp
-      - install-run-npm
       - install_awscli
-      - db-wait
-      - run-store-tests
       - build-deployment-artifacts
       - upload-artifacts-to-storage
       - code-deploy
