@@ -1,5 +1,5 @@
 pwd
 ls -al
 printenv
-cd /home/ubuntu/webapp/
+cd /home/ubuntu/
 pm2 stop API

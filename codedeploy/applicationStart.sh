@@ -2,7 +2,7 @@ pwd
 ls -al
 printenv
 
-cd home/ubuntu/api
+cd /home/ubuntu/
 pwd
 ls -al
 # sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/home/centos/cloudwatch-agent-config.json -s
