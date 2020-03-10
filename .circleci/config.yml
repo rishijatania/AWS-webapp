@@ -70,12 +70,8 @@ commands:
       - run:
           name: Code Deploy API Call
           command: |
-            aws deploy create-deployment \
-              --application-name ${CODEDEPLOY_APPLICATION_NAME} \
-              --deployment-config-name CodeDeployDefault.AllAtOnce \
-              --deployment-group-name ${CODEDEPLOY_APPLICATION_DEPLOYMENT_GROUP_NAME} \
-              --description "CSYE6225 - Codedeploy" \ 
-              --s3-location bucket=${S3_CODEDEPLOY_BUCKET},bundleType=zip,key=webapp-${CIRCLE_BUILD_NUM}.zip
+            aws deploy create-deployment --application-name ${CODEDEPLOY_APPLICATION_NAME} --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name ${CODEDEPLOY_APPLICATION_DEPLOYMENT_GROUP_NAME} --description "CSYE6225 - Codedeploy" --s3-location bucket=${S3_CODEDEPLOY_BUCKET},bundleType=zip,key=webapp-${CIRCLE_BUILD_NUM}.zip --output json
+
 
   db-wait:
     steps:
