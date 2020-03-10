@@ -1,0 +1,40 @@
+version: 0.0
+os: linux
+
+files:
+  - source: ./
+    destination: /home/ubuntu/webapp
+# permissions:
+#   - object: /home/centos
+#     owner: centos
+#     group: centos
+#     mode: 700
+#     type:
+#       - file
+#   - object: /home/centos
+#     owner: centos
+#     group: centos
+#     mode: 700
+#     type:
+#       - directory
+
+hooks:
+  ApplcationStop:
+    - location: ./applicationStop.sh
+      timeout: 300
+      runas: ubuntu
+
+  BeforeInstall:
+    - location: ./beforeInstall.sh
+      timeout: 300
+      runas: ubuntu
+
+  AfterInstall:
+    - location: ./afterInstall.sh
+      timeout: 300
+      runas: ubuntu
+
+  ApplicationStart:
+    - location: ./applicationStart.sh
+      timeout: 300
+      runas: ubuntu

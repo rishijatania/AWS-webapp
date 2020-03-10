@@ -33,6 +33,7 @@
     "passport": "^0.4.1",
     "passport-http": "^0.3.0",
     "password-validator": "^5.0.3",
+    "pm2": "^4.2.3",
     "sequelize": "^5.21.5",
     "sequelize-cli": "^5.5.1",
     "validator": "^12.2.0"
