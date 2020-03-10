@@ -3,20 +3,20 @@ os: linux
 
 files:
   - source: ./
-    destination: /home/ubuntu/webapp
-# permissions:
-#   - object: /home/centos
-#     owner: centos
-#     group: centos
-#     mode: 700
-#     type:
-#       - file
-#   - object: /home/centos
-#     owner: centos
-#     group: centos
-#     mode: 700
-#     type:
-#       - directory
+    destination: /home/ubuntu
+permissions:
+  - object: /home/ubuntu
+    owner: ubuntu
+    group: ubuntu
+    mode: 700
+    type:
+      - file
+  - object: /home/ubuntu
+    owner: ubuntu
+    group: ubuntu
+    mode: 700
+    type:
+      - directory
 
 hooks:
   ApplcationStop:
