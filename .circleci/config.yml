@@ -6,7 +6,7 @@ executors:
     docker:
       - image: circleci/node:11.1.0 # the primary container, where your job's commands are run
         environment:
-          APP: dev
+          NODE_ENV: dev
           PORT: 3000
           DB_DIALECT: mysql
           DB_HOST: 127.0.0.1
@@ -55,13 +55,13 @@ commands:
           command: |
             cd /home/circleci
             mkdir codedeploy_artifact
-            zip -r webapp-${CIRCLE_BUILD_NUM}.zip /home/circleci/webapp
+            zip -r webapp-${CIRCLE_BUILD_NUM}.zip webapp/api webapp/appspec.yml webapp/codedeploy/*.sh
             mv webapp-${CIRCLE_BUILD_NUM}.zip /home/circleci/codedeploy_artifact
 
-  copy-artifacts-to-storage:
+  upload-artifacts-to-storage:
     steps:
       - run:
-          name: Copy Build Atrifact to AWS S3
+          name: Upload Build Atrifact to AWS S3
           command: |
             aws s3 sync /home/circleci/codedeploy_artifact s3://${S3_CODEDEPLOY_BUCKET}
 
@@ -70,6 +70,12 @@ commands:
       - run:
           name: Code Deploy API Call
           command: |
+            aws deploy create-deployment \
+              --application-name ${CODEDEPLOY_APPLICATION_NAME} \
+              --deployment-config-name CodeDeployDefault.AllAtOnce \
+              --deployment-group-name ${CODEDEPLOY_APPLICATION_DEPLOYMENT_GROUP_NAME} \
+              --description "CSYE6225 - Codedeploy" \ 
+              --s3-location bucket=${S3_CODEDEPLOY_BUCKET},bundleType=zip,key=webapp-${CIRCLE_BUILD_NUM}.zip
 
   db-wait:
     steps:
@@ -117,7 +123,8 @@ jobs:
       - db-wait
       - run-store-tests
       - build-deployment-artifacts
-      - copy-artifacts-to-storage
+      - upload-artifacts-to-storage
+      - code-deploy
 
 workflows:
   pr-check:
