@@ -127,12 +127,13 @@ app.use(cors());
 //Setup Routes and handle errors
 app.use('/v1', v1);
 
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-	var err = new Error('Not Found');
-	err.status = 400;
-	// next(err);
-});
+// // catch 404 and forward to error handler
+// app.use(function (req, res, next) {
+// 	var err = new Error('Not Found');
+// 	err.status = 400;
+// 	// next(err);
+// 	res.json({err});
+// });
 
 // error handler
 app.use(function (err, req, res, next) {
