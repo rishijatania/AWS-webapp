@@ -8,7 +8,7 @@ describe("User", () => {
     describe('/POST', () => {
         it('it should create a user if correct data is sent, return user info', (done) => {
             chai.request(server)
-                .post('/v1/user')
+                .post('/v2/user')
 				.send({
 					first_name: 'ABCD',
 					last_name: 'snsnvsidvnisduisdbib',
@@ -25,7 +25,7 @@ describe("User", () => {
 	describe('/GET', () => {
         it('it should validate user if correct, return user info', (done) => {
             chai.request(server)
-                .get('/v1/user/self')
+                .get('/v2/user/self')
                 .auth('rishi@gmail.com','Rishi1234')
                 .end((err, res) => {
                     res.should.have.status(200);
@@ -36,7 +36,7 @@ describe("User", () => {
 
         it('it should validate user if non correct, return unauthorized', (done) => {
             chai.request(server)
-                .get('/v1/user/self')
+                .get('/v2/user/self')
                 .auth('rishi@gmail.com','svsfv')
                 .end((err, res) => {
                     res.should.have.status(401);
