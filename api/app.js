@@ -125,7 +125,7 @@ if (CONFIG.app === 'prod') {
 app.use(cors());
 
 //Setup Routes and handle errors
-app.use('/v2', v1);
+app.use('/v1', v1);
 
 // // catch 404 and forward to error handler
 // app.use(function (req, res, next) {
