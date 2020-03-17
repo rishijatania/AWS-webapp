@@ -1,5 +1,6 @@
 const express = require('express');
 const logger = require('morgan');
+const logger = require('./config/log4js');
 const bodyParser = require('body-parser');
 const pe = require('parse-error');
 const cors = require('cors');
@@ -7,6 +8,7 @@ const fs = require('fs');
 const aws = require('aws-sdk');
 const multerS3 = require('multer-s3');
 const CONFIG = require('./config/config');
+
 /*
 Module:multer
 multer is middleware used to handle multipart form data

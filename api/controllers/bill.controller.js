@@ -6,16 +6,18 @@ const CONFIG = require('../config/config');
 const path = require('path');
 const fs = require('fs');
 const { s3_delete } = require("../app");
+const { logger } = require('../config/log4js');
 
 const createBill = async function (req, res) {
 	const body = req.body;
 
 	let err, user, bill;
-
+	logger.info("Bill :: Create");
 	//Round of to 2 decimal
 	body.amount_due = body.amount_due.toFixed(2);
 
 	if (Date.parse(body.due_date) < Date.parse(body.bill_date)) {
+		logger.error("Bill :: Create :: Due Date should be after the Bill date");
 		return ReE(res, { error: { msg: "Due Date should be after the Bill date" } }, 400);
 	}
 
@@ -23,6 +25,7 @@ const createBill = async function (req, res) {
 
 	[err, user] = await searchByEmail(req);
 	if (err) {
+		logger.error("Bill :: Create :: User Not Found");
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
 
@@ -30,12 +33,13 @@ const createBill = async function (req, res) {
 
 	[err, bill] = await to(Bill.create(body));
 	if (err || !bill) {
-		console.log(err.message);
+		logger.error('Bill :: Create :: Bill` creation failed');
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
 	bill = bill.toWeb();
 	bill.attachment = {};
-	// console.log(bill.toWeb());
+	logger.debug(bill);
+	logger.info('Bill :: Create :: Successfull')
 	return ReS(res, bill, 201);
 
 };
@@ -44,9 +48,10 @@ module.exports.createBill = createBill;
 const getBillsByUser = async function (req, res) {
 	const body = req.body;
 	let err, user, bill;
-
+	logger.info('Bill :: GetBillByUser')
 	[err, user] = await searchByEmail(req);
 	if (err) {
+		logger.error("Bill :: GetBillByUser :: User Not Found");
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
 
@@ -57,7 +62,7 @@ const getBillsByUser = async function (req, res) {
 		}]
 	}));
 	if (err || !bill) {
-		console.log(err.message);
+		logger.error('Bill :: GetBillByUser ::' + err.message);
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
 	let bills = [];
@@ -74,6 +79,8 @@ const getBillsByUser = async function (req, res) {
 		}
 		bills.push(item);
 	});
+	logger.debug(bills);
+	logger.info('Bill :: GetBillByUser :: Successfull')
 	return ReS(res, bills, 200);
 
 };
@@ -81,18 +88,21 @@ module.exports.getBillsByUser = getBillsByUser;
 
 const getBillById = async function (req, res) {
 	let err, user, bill;
-
+	logger.info("Bill :: GetBillByID");
 	[err, bill] = await searchBillById(req.params.id);
 	if (!bill || err) {
+		logger.error("Bill :: GetBillByID :: Bill Not Found");
 		return ReE(res, { error: { msg: 'Bill Not Found' } }, 404);
 	}
 
 	[err, user] = await searchByEmail(req);
 	if (err) {
+		logger.error("Bill :: GetBillByID :: User Not Found");
 		console.log(err.message);
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
 	if (user.id !== bill.owner_id) {
+		logger.error("Bill :: GetBillByID :: Unauthorized : Authentication error");
 		return ReE(res, { error: { msg: "Unauthorized : Authentication error" } }, 401);
 	}
 	bill = bill.toWeb();
@@ -105,6 +115,8 @@ const getBillById = async function (req, res) {
 		bill.attachment.encoding = undefined;
 		bill.attachment.checksum = undefined;
 	}
+	logger.debug(bill);
+	logger.info('Bill :: GetBillByID :: Successfull')
 	return ReS(res, bill, 200);
 
 };
@@ -120,41 +132,50 @@ module.exports.searchBillById = searchBillById;
 const deleteBillById = async function (req, res) {
 	const body = req.body;
 	let err, user, bill, success;
-	console.log(req.params.id);
+	logger.info('Bill :: DeleteBillById')
+	logger.debug('ID:'+req.params.id);
 
 	[err, bill] = await searchBillById(req.params.id);
 	if (err || !bill) {
+		logger.error("Bill :: DeleteBillById :: Bill Not Found");
 		return ReE(res, { error: { msg: "Bill Not Found" } }, 404);
 	}
 
 	[err, user] = await searchByEmail(req);
-	console.log("user id" + user.id);
+	loggger.debug("user id" + user.id);
 	if (err) {
+		logger.error("Bill :: DeleteBillById :: User Not Found");
 		return ReE(res, { error: { msg: 'Database Operation Error' } }, 400);
 	}
 
 	if (user.id !== bill.owner_id) {
+		logger.error("Bill :: DeleteBillById :: Unauthorized Authentication error");
 		return ReE(res, { error: { msg: "Unauthorized : Authentication error" } }, 401);
 	}
 
 	[err, success] = await to(Bill.destroy({ where: { id: req.params.id, owner_id: user.id } }));
 
 	if (err || success === 0) {
+		logger.error("Bill :: DeleteBillById :: Database Operation Error");
 		return ReE(res, { error: { msg: 'Database Operation Error' } }, 500);
 	}
 	if (bill.attachment !== null) {
 		if (CONFIG.app === 'prod') {
 			err = await s3_delete(req, res, bill.attachment);
+			logger.debug("Bill :: DeleteBillById :: File Name : " + bill.attachment);
 			if (err) {
+				logger.error("Bill :: DeleteBillById :: S3 unable to Delete");
 				return ReE(res, err, 400);
 			}
 		} else {
 			err = deleteFileFromDisk(bill);
 			if (err) {
+				logger.error("Bill :: DeleteBillById :: Local Unable to Delete");
 				return ReE(res, err, 500);
 			}
 		}
 	}
+	logger.info('Bill :: DeleteBillById :: Successfull')
 	return ReS(res, {}, 204);
 };
 
@@ -162,7 +183,7 @@ module.exports.deleteBillById = deleteBillById;
 
 const updateBillById = async function (req, res) {
 	const body = req.body;
-
+	logger.info('Bill :: UpdateBillById')
 	let err, user, bill, success, msg;
 	console.log(req.params.id);
 	[err, bill] = await searchBillById(req.params.id);
