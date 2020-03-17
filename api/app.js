@@ -1,6 +1,5 @@
 const express = require('express');
 const logger = require('morgan');
-const logger = require('./config/log4js');
 const bodyParser = require('body-parser');
 const pe = require('parse-error');
 const cors = require('cors');
