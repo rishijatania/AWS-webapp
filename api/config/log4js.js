@@ -8,7 +8,7 @@ log4js.configure({
         },
         fileAppender: {
             type: 'file',
-            filename: `${appRoot}/app.log`,
+            filename: `/home/ubuntu/app.log`,
             maxLogSize: 10485760,
             backups: 1,
             compress: true
@@ -23,4 +23,5 @@ log4js.configure({
 });
 
 const logger = log4js.getLogger();
+logger.debug("App started");
 module.exports.logger = logger;
