@@ -17,10 +17,10 @@ const logger = log4js.getLogger();
 logger.info("app Started");
 module.exports.logger = logger;
 
-//StatsD
-const SDC = require('statsd-client');
-const statsd = new SDC({host: 'localhost', port: 8125});
-module.exports.statsd=statsd;
+// //StatsD
+// const SDC = require('statsd-client');
+// const statsd = new SDC({host: 'localhost', port: 8125});
+// module.exports.statsd=statsd;
 
 /*
 Module:multer

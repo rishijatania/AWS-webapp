@@ -7,7 +7,9 @@ const os = require('os');
 const fs = require('fs');
 const md5 = require('md5');
 const CONFIG = require('../config/config');
-const { s3_upload, s3_delete, logger, statsd } = require("../app");
+const { s3_upload, s3_delete, logger } = require("../app");
+const SDC = require('statsd-client');
+const statsd = new SDC({host: 'localhost', port: 8125});
 
 const createFile = async function (req, res) {
 	logger.info("File :: Create");

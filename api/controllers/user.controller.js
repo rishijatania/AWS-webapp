@@ -3,7 +3,9 @@ const authService       = require('../services/auth');
 const { to, ReE, ReS }  = require('../services/util');
 const passwordValidator = require('password-validator');
 const validator = require('validator');
-const { logger, statsd } = require("../app");
+const { logger } = require("../app");
+const SDC = require('statsd-client');
+const statsd = new SDC({host: 'localhost', port: 8125});
 
 const create = async function(req, res){
     const userInfo = req.body;
