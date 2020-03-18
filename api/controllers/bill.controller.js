@@ -152,7 +152,7 @@ const deleteBillById = async function (req, res) {
 	}
 
 	[err, user] = await searchByEmail(req);
-	loggger.debug("user id" + user.id);
+	logger.debug("user id" + user.id);
 	if (err) {
 		logger.error("Bill :: DeleteBillById :: User Not Found");
 		return ReE(res, { error: { msg: 'Database Operation Error' } }, 400);
