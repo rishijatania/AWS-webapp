@@ -21,7 +21,9 @@ module.exports.logger = logger;
 // const SDC = require('statsd-client');
 // const statsd = new SDC({host: 'localhost', port: 8125});
 // module.exports.statsd=statsd;
-
+var lynx = require('lynx');
+var metrics = new lynx('localhost', 8125);
+module.exports.metrics=metrics;
 /*
 Module:multer
 multer is middleware used to handle multipart form data

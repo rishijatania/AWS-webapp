@@ -7,13 +7,13 @@ const os = require('os');
 const fs = require('fs');
 const md5 = require('md5');
 const CONFIG = require('../config/config');
-const { s3_upload, s3_delete, logger } = require("../app");
-const SDC = require('statsd-client');
-const statsd = new SDC({host: 'localhost', port: 8125});
+const { s3_upload, s3_delete, logger, metrics } = require("../app");
+// const SDC = require('statsd-client');
+// const statsd = new SDC({host: 'localhost', port: 8125});
 
 const createFile = async function (req, res) {
 	logger.info("File :: Create");
-	statsd.increment("[COUNTER]:[POST]:[FILE]:[ID]");
+	metrics.increment("[COUNTER]:[POST]:[FILE]:[ID]");
 	var file = {};
 	file.file_name = req.file.originalname;
 	file.file_size = req.file.size;
@@ -75,7 +75,7 @@ module.exports.createFile = createFile;
 const getFileById = async function (req, res) {
 	let err, user, bill;
 	logger.info("File :: GetFileById");
-	statsd.increment("[COUNTER]:[GET]:[FILE]:[ID]");
+	metrics.increment("[COUNTER]:[GET]:[FILE]:[ID]");
 	[err, bill] = await searchBillById(req.params.id);
 	if (!bill || err) {
 		logger.error('File :: GetFileById :: Bill Not Found');
@@ -114,7 +114,7 @@ const deleteFileById = async function (req, res) {
 
 	let err, user, bill, file;
 	logger.info("File :: DeleteFileById");
-	statsd.increment("[COUNTER]:[DELETE]:[FILE]:[ID]");
+	metrics.increment("[COUNTER]:[DELETE]:[FILE]:[ID]");
 	[err, bill] = await searchBillById(req.params.id);
 	if (bill == undefined || err) {
 		logger.error("File :: DeleteFileById :: Bill Not Found");
