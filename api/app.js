@@ -1,5 +1,5 @@
 const express = require('express');
-const logger = require('morgan');
+const logger1 = require('morgan');
 const bodyParser = require('body-parser');
 const pe = require('parse-error');
 const cors = require('cors');
@@ -7,12 +7,12 @@ const fs = require('fs');
 const aws = require('aws-sdk');
 const multerS3 = require('multer-s3');
 const CONFIG = require('./config/config');
-
+const { logger } = require('../config/log4js');
 /*
 Module:multer
 multer is middleware used to handle multipart form data
 */
-
+logger.info("app Started");
 let s3 = new aws.S3();
 aws.config.update({ region: CONFIG.aws_region });
 const bucket = CONFIG.s3_bucket;
@@ -103,7 +103,7 @@ module.exports.s3_delete = s3_delete;
 const v1 = require('./routes/v1');
 const app = express();
 
-app.use(logger('dev'));
+app.use(logger1('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

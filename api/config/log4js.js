@@ -3,10 +3,10 @@ const CONFIG = require('./config');
 var appRoot = require('app-root-path');
 log4js.configure({
     appenders: {
-        consoleAppender: {
-            type: 'console'
+        out: {
+            type: 'stdout'
         },
-        fileAppender: {
+        app: {
             type: 'file',
             filename: `/home/ubuntu/app.log`,
             maxLogSize: 10485760,
@@ -16,7 +16,7 @@ log4js.configure({
     },
     categories: {
         default: {
-            appenders: ['consoleAppender', 'fileAppender'],
+            appenders: ['out', 'app'],
             level: CONFIG.app === 'prod' ? 'info' : 'debug'
         }
     }
