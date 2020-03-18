@@ -11,11 +11,6 @@
                         "file_path": "/home/ubuntu/api/app.log",
                         "log_group_name": "csye6225-logs",
 						"log_stream_name": "webapp"
-					},
-					{
-						"file_path": "/home/ubuntu/.pm2/logs/API-out-0.log",
-                        "log_group_name": "csye6225",
-						"log_stream_name": "pm2"
 					}
                 ]
             }
