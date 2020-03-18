@@ -8,7 +8,7 @@ log4js.configure({
         },
         app: {
             type: 'file',
-            filename: `${appRoot}/app.log`,
+            filename: 'app.log',
             maxLogSize: 10485760,
             backups: 1,
             compress: true
