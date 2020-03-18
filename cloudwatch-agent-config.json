@@ -24,6 +24,5 @@
                 "metrics_aggregation_interval": 0
             }
         }
-    },
-    "log_stream_name": "cloudwatch_log_stream"
+    }
 }
