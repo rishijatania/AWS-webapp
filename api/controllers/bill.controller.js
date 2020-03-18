@@ -5,16 +5,16 @@ const { searchByEmail } = require('./user.controller');
 const CONFIG = require('../config/config');
 const path = require('path');
 const fs = require('fs');
-const { s3_delete, logger, metrics} = require("../app");
-// const SDC = require('statsd-client');
-// const statsd = new SDC({host: 'localhost', port: 8125});
+const { s3_delete, logger} = require("../app");
+const SDC = require('statsd-client');
+const statsd = new SDC({host: 'localhost', port: 8125});
 
 const createBill = async function (req, res) {
 	const body = req.body;
 
 	let err, user, bill;
 	logger.info("Bill :: Create");
-	metrics.increment("[COUNTER]:[POST]:[BILL]:[USER]");
+	statsd.increment("POST BILL USER");
 	//Round of to 2 decimal
 	body.amount_due = body.amount_due.toFixed(2);
 
@@ -51,7 +51,7 @@ const getBillsByUser = async function (req, res) {
 	const body = req.body;
 	let err, user, bill;
 	logger.info('Bill :: GetBillByUser');
-	metrics.increment("[COUNTER]:[GET]:[BILL]:[USER]");
+	statsd.increment("GET BILL USER");
 	[err, user] = await searchByEmail(req);
 	if (err) {
 		logger.error("Bill :: GetBillByUser :: User Not Found");
@@ -92,7 +92,7 @@ module.exports.getBillsByUser = getBillsByUser;
 const getBillById = async function (req, res) {
 	let err, user, bill;
 	logger.info("Bill :: GetBillByID");
-	metrics.increment("[COUNTER]:[GET]:[BILL]:[ID]");
+	statsd.increment("GET BILL ID");
 	[err, bill] = await searchBillById(req.params.id);
 	if (!bill || err) {
 		logger.error("Bill :: GetBillByID :: Bill Not Found");
@@ -137,7 +137,7 @@ const deleteBillById = async function (req, res) {
 	const body = req.body;
 	let err, user, bill, success;
 	logger.info('Bill :: DeleteBillById');
-	metrics.increment("[COUNTER]:[DELETE]:[BILL]:[ID]");
+	statsd.increment("DELETE BILL ID");
 	logger.debug('ID:'+req.params.id);
 
 	[err, bill] = await searchBillById(req.params.id);
@@ -189,7 +189,7 @@ module.exports.deleteBillById = deleteBillById;
 const updateBillById = async function (req, res) {
 	const body = req.body;
 	logger.info('Bill :: UpdateBillById');
-	metrics.increment("[COUNTER]:[PUT]:[BILL]:[ID]");
+	statsd.increment("PUT BILL ID");
 	let err, user, bill, success, msg;
 	console.log(req.params.id);
 	[err, bill] = await searchBillById(req.params.id);
