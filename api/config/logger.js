@@ -24,7 +24,6 @@ const appSettings = {
 			},
 			pm2: true,
 			disableClustering: true,
-			pm2InstanceVar: '0'
 		}
 	}
 }
