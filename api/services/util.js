@@ -51,7 +51,7 @@ function endTimer (api){
 	endDate = new Date();
  	seconds = (endDate.getTime() - startDate.getTime());
 
-	sdc.timing(api, seconds);
+	statsd.timing(api, seconds);
 }
 
 
