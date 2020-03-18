@@ -7,12 +7,21 @@ const fs = require('fs');
 const aws = require('aws-sdk');
 const multerS3 = require('multer-s3');
 const CONFIG = require('./config/config');
-const logger = require('./config/log4js');
+const log4js = require('Log4js');
+// App settings
+const { LogConfig } = require('./config/log4js').log4js;
+// Logger configuration
+log4js.configure(LogConfig);
+// Create the logger
+const logger = log4js.getLogger();
+logger.info("app Started");
+module.exports.logger = logger;
+
 /*
 Module:multer
 multer is middleware used to handle multipart form data
 */
-logger.info("app Started");
+
 let s3 = new aws.S3();
 aws.config.update({ region: CONFIG.aws_region });
 const bucket = CONFIG.s3_bucket;

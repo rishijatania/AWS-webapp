@@ -3,7 +3,7 @@ const authService       = require('../services/auth');
 const { to, ReE, ReS }  = require('../services/util');
 const passwordValidator = require('password-validator');
 const validator = require('validator');
-const logger = require('../config/log4js');
+const { logger } = require("../app");
 
 const create = async function(req, res){
     const userInfo = req.body;
