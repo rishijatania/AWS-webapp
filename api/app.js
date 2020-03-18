@@ -7,7 +7,7 @@ const fs = require('fs');
 const aws = require('aws-sdk');
 const multerS3 = require('multer-s3');
 const CONFIG = require('./config/config');
-const { logger } = require('../config/log4js');
+const { logger } = require('./config/log4js');
 /*
 Module:multer
 multer is middleware used to handle multipart form data
