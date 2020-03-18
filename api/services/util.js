@@ -47,7 +47,7 @@ module.exports.startTimer = function(){ // TE stands for Throw Error
 	startDate=new Date();
 };
 
-module.exports.endTimer = function(api){
+function endTimer (api){
 	endDate = new Date();
  	seconds = (endDate.getTime() - startDate.getTime());
 
