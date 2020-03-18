@@ -6,7 +6,7 @@ const CONFIG = require('../config/config');
 const path = require('path');
 const fs = require('fs');
 const { s3_delete } = require("../app");
-const { logger } = require('../config/log4js');
+const logger = require('../config/log4js');
 
 const createBill = async function (req, res) {
 	const body = req.body;
