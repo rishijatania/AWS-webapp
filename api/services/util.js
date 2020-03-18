@@ -54,5 +54,4 @@ function endTimer (api){
 	statsd.timing(api, seconds);
 }
 
-
-
+module.exports.endTimer = endTimer;
