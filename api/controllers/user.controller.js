@@ -1,6 +1,6 @@
 const { User }          = require('../models');
 const authService       = require('../services/auth');
-const { to, ReE, ReS }  = require('../services/util');
+const { to, ReE, ReS, startTimer}  = require('../services/util');
 const passwordValidator = require('password-validator');
 const validator = require('validator');
 const { logger } = require("../app");
@@ -8,6 +8,7 @@ const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
 
 const create = async function(req, res){
+	startTimer();
     const userInfo = req.body;
 	logger.info("User :: Create");
 	statsd.increment("POST USER");
@@ -55,7 +56,7 @@ const create = async function(req, res){
 			//Remove password from response
 			user.password = undefined;
 			logger.info("User :: Create :: Successfull");
-			return ReS(res,user.toWeb(), 201);
+			return ReS(res,user.toWeb(), 201, 'CREATE USER');
 		}
 		else if(success) {
 			logger.error("User :: Create :: User already exists");
@@ -83,7 +84,7 @@ const get = async function(req, res){
 	user.password=undefined;
 	logger.debug("User :: Get :: "+ user.toWeb());
 	logger.info("User :: Get :: Successfull");
-    return ReS(res,user.toWeb(), 200);
+    return ReS(res,user.toWeb(), 200,'GET USER');
 
 };
 module.exports.get = get;
@@ -132,7 +133,7 @@ const update = async function(req, res){
 	}
 	logger.debug("User :: Update :: "+ user.toWeb());
 	logger.info("User :: Update :: Successfull");
-	return ReS(res,{msg: 'Updated User: '+user.email_address}, 204); //{message :'Updated User: '+user.email_address}
+	return ReS(res,{msg: 'Updated User: '+user.email_address}, 204,'UPDATE USER'); //{message :'Updated User: '+user.email_address}
     
 };
 module.exports.update = update;
