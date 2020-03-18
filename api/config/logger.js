@@ -1,5 +1,4 @@
 var appRoot = require('app-root-path');
-const CONFIG = require('./config')
 
 const appSettings = {
 	log4js: {
@@ -20,7 +19,7 @@ const appSettings = {
 			categories: {
 				default: {
 					appenders: ['out', 'app'],
-					level: CONFIG.app == 'prod'? 'info':'debug'
+					level: 'debug'
 				}
 			}
         }
