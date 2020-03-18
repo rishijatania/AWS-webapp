@@ -67,7 +67,7 @@ const createFile = async function (req, res) {
 	file.encoding = undefined;
 	file.checksum = undefined;
 	logger.info('File :: Create :: Successfull');
-	return ReS(res, file.toWeb(), 201);
+	return ReS(res, file.toWeb(), 201,'CREATE FILE');
 
 };
 module.exports.createFile = createFile;
@@ -105,7 +105,7 @@ const getFileById = async function (req, res) {
 	bill.attachment.checksum = undefined;
 	logger.info("File :: GetFileById :: Successfull ");
 	logger.debug(bill.attachment.toWeb())
-	return ReS(res, bill.attachment.toWeb(), 200);
+	return ReS(res, bill.attachment.toWeb(), 200, 'GET FILE');
 
 };
 module.exports.getFileById = getFileById;
@@ -157,7 +157,7 @@ const deleteFileById = async function (req, res) {
 		}
 	}
 	logger.info("File :: DeleteFileById :: Successfull");
-	return ReS(res, {}, 204);
+	return ReS(res, {}, 204, 'DELETE FILE');
 };
 
 module.exports.deleteFileById = deleteFileById;

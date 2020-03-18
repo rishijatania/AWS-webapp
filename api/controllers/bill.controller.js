@@ -42,7 +42,7 @@ const createBill = async function (req, res) {
 	bill.attachment = {};
 	logger.debug(bill);
 	logger.info('Bill :: Create :: Successfull')
-	return ReS(res, bill, 201);
+	return ReS(res, bill, 201,'CREATE BILL');
 
 };
 module.exports.createBill = createBill;
@@ -84,7 +84,7 @@ const getBillsByUser = async function (req, res) {
 	});
 	logger.debug(bills);
 	logger.info('Bill :: GetBillByUser :: Successfull')
-	return ReS(res, bills, 200);
+	return ReS(res, bills, 200,'GET BILL BY USER');
 
 };
 module.exports.getBillsByUser = getBillsByUser;
@@ -121,7 +121,7 @@ const getBillById = async function (req, res) {
 	}
 	logger.debug(bill);
 	logger.info('Bill :: GetBillByID :: Successfull')
-	return ReS(res, bill, 200);
+	return ReS(res, bill, 200,'GET BILL BY ID');
 
 };
 module.exports.getBillById = getBillById;
@@ -181,7 +181,7 @@ const deleteBillById = async function (req, res) {
 		}
 	}
 	logger.info('Bill :: DeleteBillById :: Successfull')
-	return ReS(res, {}, 204);
+	return ReS(res, {}, 204,'DELETE BILL');
 };
 
 module.exports.deleteBillById = deleteBillById;
@@ -238,7 +238,7 @@ const updateBillById = async function (req, res) {
 		success.attachment.checksum = undefined;
 	}
 
-	return ReS(res, success, 200);
+	return ReS(res, success, 200,'UPDATE BILL');
 };
 module.exports.updateBillById = updateBillById;
 

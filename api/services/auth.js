@@ -1,9 +1,9 @@
 const { User } = require('../models');
 const validator = require('validator');
-const { to, TE, ReE } = require('../services/util');
+const { to, TE, ReE,startTimer } = require('../services/util');
 
 const basicAuth = async function basicAuth(req, res, next) {
-
+	startTimer();
     // check for basic auth header
     if (!req.headers.authorization || req.headers.authorization.indexOf('Basic ') === -1) {
         return res.status(401).json({error:{msg: 'Missing Authorization Header'}});
