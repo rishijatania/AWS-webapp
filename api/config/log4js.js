@@ -23,5 +23,5 @@ log4js.configure({
 });
 
 const logger = log4js.getLogger();
-logger.debug("App started");
+logger.info("App started");
 module.exports.logger = logger;
