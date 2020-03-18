@@ -3,11 +3,12 @@ const authService       = require('../services/auth');
 const { to, ReE, ReS }  = require('../services/util');
 const passwordValidator = require('password-validator');
 const validator = require('validator');
-const { logger } = require("../app");
+const { logger, statsd } = require("../app");
 
 const create = async function(req, res){
     const userInfo = req.body;
 	logger.info("User :: Create");
+	statsd.increment("[COUNTER]:[POST]:[USER]");
     if(!userInfo.email_address){
 		logger.error("User :: Create :: Email Address is missing");
         return ReE(res, {error:{ msg: 'Email Address is missing'}} ,400);
@@ -71,7 +72,8 @@ const get = async function(req, res){
 	logger.info("User :: Get");
     console.log(req.email_address);
     console.log("get function");
-    [err, user] = await searchByEmail(req);
+	[err, user] = await searchByEmail(req);
+	statsd.increment("[COUNTER]:[GET]:[USER]");
     if(err){
 		logger.error("User :: Get :: User not found");
         return ReE(res, {error:{ msg: 'User not found'}} , 400);
@@ -88,6 +90,7 @@ const update = async function(req, res){
     let data;
     data = req.body;
 	logger.info("User :: Update");
+	statsd.increment("[COUNTER]:[PUT]:[USER]");
     // Create a schema
     var schema = new passwordValidator();
     // Add properties to it
