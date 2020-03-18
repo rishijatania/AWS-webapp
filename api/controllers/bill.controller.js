@@ -8,6 +8,7 @@ const fs = require('fs');
 const { s3_delete, logger} = require("../app");
 const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
+const util = require('../services/util');
 
 const createBill = async function (req, res) {
 	const body = req.body;
@@ -32,8 +33,9 @@ const createBill = async function (req, res) {
 	}
 
 	body.owner_id = user.id;
-
+	util.startTimer();
 	[err, bill] = await to(Bill.create(body));
+	util.endTimer('SQL CREATE BILL')
 	if (err || !bill) {
 		logger.error('Bill :: Create :: Bill` creation failed');
 		return ReE(res, { error: { msg: err.message } }, 400);
@@ -57,13 +59,14 @@ const getBillsByUser = async function (req, res) {
 		logger.error("Bill :: GetBillByUser :: User Not Found");
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
-
+	util.startTimer();
 	[err, bill] = await to(Bill.findAll({
 		where: { owner_id: user.id }, include: [{
 			model: File,
 			as: 'attachment' // specifies how we want to be able to access our joined rows on the returned data
 		}]
 	}));
+	util.endTimer('SQL GET BILL BY USER')
 	if (err || !bill) {
 		logger.error('Bill :: GetBillByUser ::' + err.message);
 		return ReE(res, { error: { msg: err.message } }, 400);
@@ -93,7 +96,9 @@ const getBillById = async function (req, res) {
 	let err, user, bill;
 	logger.info("Bill :: GetBillByID");
 	statsd.increment("GET BILL ID");
+	util.startTimer();
 	[err, bill] = await searchBillById(req.params.id);
+	util.endTimer('SQL GET BILL BY ID')
 	if (!bill || err) {
 		logger.error("Bill :: GetBillByID :: Bill Not Found");
 		return ReE(res, { error: { msg: 'Bill Not Found' } }, 404);
@@ -157,9 +162,9 @@ const deleteBillById = async function (req, res) {
 		logger.error("Bill :: DeleteBillById :: Unauthorized Authentication error");
 		return ReE(res, { error: { msg: "Unauthorized : Authentication error" } }, 401);
 	}
-
+	util.startTimer();
 	[err, success] = await to(Bill.destroy({ where: { id: req.params.id, owner_id: user.id } }));
-
+	util.endTimer('SQL DELETE BILL')
 	if (err || success === 0) {
 		logger.error("Bill :: DeleteBillById :: Database Operation Error");
 		return ReE(res, { error: { msg: 'Database Operation Error' } }, 500);
@@ -218,9 +223,9 @@ const updateBillById = async function (req, res) {
 	bill.amount_due = body.amount_due;
 	bill.paymentStatus = body.paymentStatus;
 	bill.categories = body.categories;
-
+	util.startTimer();
 	[err, success] = await to(bill.save());
-
+	util.endTimer('SQL UPDATE BILL')
 	if (err || !success) {
 		console.log("errpr " + err.message);
 		msg = err.message.includes('Validation error') ? err.message : 'Database Operation Error';

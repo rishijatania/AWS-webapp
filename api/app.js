@@ -7,6 +7,7 @@ const fs = require('fs');
 const aws = require('aws-sdk');
 const multerS3 = require('multer-s3');
 const CONFIG = require('./config/config');
+const util = require('./services/util');
 const log4js = require('log4js');
 // App settings
 const { LogConfig } = require('./config/logger').log4js;
@@ -80,6 +81,7 @@ module.exports.upload = upload;
 
 const s3_upload = async function (req) {
 	if (CONFIG.app === 'prod') {
+		util.startTimer();
 		const file = req.file;
 		console.log("in s3 upload");
 		let params = {
@@ -95,6 +97,7 @@ const s3_upload = async function (req) {
 			return err;
 		}
 		req.file.path = data.Location;
+		util.endTimer('S3 UPLOAD')
 	}
 }
 
@@ -102,6 +105,7 @@ module.exports.s3_upload = s3_upload;
 
 const s3_delete = async function (req, res, file) {
 	console.log(req.params.id + '/' + req.params.fid);
+	util.startTimer();
 	var params = {
 		Bucket: bucket,
 		Key: req.params.id + '/' + file.file_name
@@ -111,6 +115,7 @@ const s3_delete = async function (req, res, file) {
 	} catch (err) {
 		return err;
 	}
+	util.endTimer('S3 DELETE');
 }
 module.exports.s3_delete = s3_delete;
 
