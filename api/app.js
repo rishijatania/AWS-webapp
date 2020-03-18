@@ -7,9 +7,9 @@ const fs = require('fs');
 const aws = require('aws-sdk');
 const multerS3 = require('multer-s3');
 const CONFIG = require('./config/config');
-const log4js = require('Log4js');
+const log4js = require('log4js');
 // App settings
-const { LogConfig } = require('./config/log4js').log4js;
+const { LogConfig } = require('./config/logger').log4js;
 // Logger configuration
 log4js.configure(LogConfig);
 // Create the logger
