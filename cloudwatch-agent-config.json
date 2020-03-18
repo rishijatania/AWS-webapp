@@ -10,9 +10,18 @@
                     {
                         "file_path": "/home/ubuntu/api/app.log",
                         "log_group_name": "csye6225-logs",
-						"log_stream_name": "webapp"
-					}
+                        "log_stream_name": "webapp"
+                    }
                 ]
+            }
+        }
+    },
+    "metrics": {
+        "metrics_collected": {
+            "statsd": {
+                "service_address": ":8125",
+                "metrics_collection_interval": 10,
+                "metrics_aggregation_interval": 0
             }
         }
     },
