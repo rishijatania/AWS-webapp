@@ -8,7 +8,7 @@ log4js.configure({
         },
         app: {
             type: 'file',
-            filename: 'app.log',
+            filename: '/home/ubuntu/app.log',
             maxLogSize: 10485760,
             backups: 1,
             compress: true
@@ -17,7 +17,7 @@ log4js.configure({
     categories: {
         default: {
             appenders: ['out', 'app'],
-            level: CONFIG.app === 'prod' ? 'info' : 'debug'
+            level: 'debug'
         }
     }
 });
