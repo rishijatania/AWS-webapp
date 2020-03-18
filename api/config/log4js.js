@@ -1,6 +1,6 @@
 const log4js = require('log4js');
-const CONFIG = require('./config');
-var appRoot = require('app-root-path');
+const logger = log4js.getLogger();
+
 log4js.configure({
     appenders: {
         out: {
@@ -8,7 +8,7 @@ log4js.configure({
         },
         app: {
             type: 'file',
-            filename: '/home/ubuntu/app.log',
+            filename: '/home/ubuntu/webapp-log4s.log',
             maxLogSize: 10485760,
             backups: 1,
             compress: true
@@ -22,6 +22,5 @@ log4js.configure({
     }
 });
 
-const logger = log4js.getLogger();
-logger.info("App started");
-module.exports.logger = logger;
+logger.debug('Logger Level On : ');
+module.exports = logger;
