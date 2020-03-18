@@ -2,8 +2,8 @@ var appRoot = require('app-root-path');
 
 const appSettings = {
 	log4js: {
-        LogConfig: {
-            appenders: {
+		LogConfig: {
+			appenders: {
 				out: {
 					type: 'stdout'
 				},
@@ -13,7 +13,7 @@ const appSettings = {
 					maxLogSize: 10485760,
 					backups: 1,
 					compress: true,
-					
+
 				}
 			},
 			categories: {
@@ -21,8 +21,10 @@ const appSettings = {
 					appenders: ['out', 'app'],
 					level: 'debug'
 				}
-			}
-        }
-    }
+			},
+			pm2: true,
+			pm2InstanceVar: '0'
+		}
+	}
 }
 module.exports = appSettings;
