@@ -1,6 +1,6 @@
 const { User } = require('../models');
 const validator = require('validator');
-const { to, TE, ReE,startTimer } = require('../services/util');
+const { to, TE, ReE,startTimer,ReS } = require('../services/util');
 
 const basicAuth = async function basicAuth(req, res, next) {
 	startTimer();
@@ -33,3 +33,9 @@ const basicAuth = async function basicAuth(req, res, next) {
 };
 
 module.exports.basicAuth = basicAuth;
+
+const healthCheck = async function healthCheck(req,res,next) {
+	return ReS(res, {"message": "Check Successful"}, 200);
+};
+
+module.exports.healthCheck = healthCheck;
