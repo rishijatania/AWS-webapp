@@ -24,4 +24,6 @@ router.post('/bill/:id/file', upload, fileUploadValidator, getBillValidator(), v
 router.get('/bill/:id/file/:fid', getFileValidator(), validate, auth.basicAuth, FileController.getFileById);
 router.delete('/bill/:id/file/:fid', getFileValidator(), validate, auth.basicAuth, FileController.deleteFileById);
 
+router.get('/check', auth.healthCheck);
+
 module.exports = router;
