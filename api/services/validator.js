@@ -27,6 +27,12 @@ const getBillValidator = () => {
 	]
 }
 
+const getBillsDueValidator = () => {
+	return [
+		param('x').exists().isNumeric()
+	]
+}
+
 const getFileValidator = () => {
 	return [
 		param('fid').exists().isUUID(),
@@ -82,5 +88,6 @@ module.exports = {
 	validate,
 	createUserValidator,
 	fileUploadValidator,
-	getFileValidator
+	getFileValidator,
+	getBillsDueValidator
 }
