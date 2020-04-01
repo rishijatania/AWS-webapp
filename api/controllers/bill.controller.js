@@ -347,20 +347,6 @@ module.exports.getBillsDueByUser = getBillsDueByUser;
 
 async function sendMessageSQS(SQSMessage) {
 	let sqsData = {
-        MessageAttributes: {
-          "id": {
-            DataType: "String",
-            StringValue: SQSMessage.id
-		  },
-		  "email_address	": {
-            DataType: "String",
-            StringValue: SQSMessage.email_address
-          },
-          "itemPrice": {
-            DataType: "String",
-            StringListValues: SQSMessage.billsDueLink
-          }
-        },
         MessageBody: JSON.stringify(SQSMessage),
         QueueUrl: queueUrl
     };
