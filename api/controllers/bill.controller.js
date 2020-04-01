@@ -7,7 +7,7 @@ const fs = require('fs');
 const { s3_delete, logger} = require("../app");
 const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
-
+ 
 const createBill = async function (req, res) {
 	const body = req.body;
 
@@ -272,27 +272,28 @@ const getBillsDueByUser = async function(req, res) {
 
 	let noOfDays = req.params.x
 	[err, user] = await searchByEmail(req);
-	if (err) {
+	if (err || !user) {
 		logger.error("Bill :: GetBillsDueByUser :: User Not Found");
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
-
+	
 	if(CONFIG.app === 'prod'){
-		let SQSMessage={
+		let SQSMessage = {
 			'user':{
-				'id':user.id,
-				'email_address':user.email_address,
-				'first_name':user.first_name,
-				'last_name':user.last_name
+				'id':this.user.id,
+				'email_address':this.user.email_address,
+				'first_name':this.user.first_name,
+				'last_name':this.user.last_name
 			},
-			'noOfDays': noOfDays
+			'noOfDays': this.noOfDays
 		};
 
 		await sendMessageToSQS(SQSMessage);
+		logger.debug('Bill :: GetBillsDueByUser :: SQS MessagePayload ' + JSON.stringify(SQSMessage));
 	}
-	logger.debug('Bill :: GetBillsDueByUser :: SQS MessagePayload ' + SQSMessage);
+	
 	logger.info('Bill :: GetBillsDueByUser :: Successfull');
-	return ReS(res, bills, 200,'GET BILLS DUE BY USER');
+	return ReS(res, {}, 201,'GET BILLS DUE BY USER');
 
 }
 
