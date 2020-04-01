@@ -1,5 +1,4 @@
-const { User, Bill, File } = require('../models');
-const authService = require('../services/auth');
+const { Bill, File } = require('../models');
 const { to, ReE, ReS, sendMessageToSQS, startTimer, endTimer } = require('../services/util');
 const { searchByEmail } = require('./user.controller');
 const CONFIG = require('../config/config');
@@ -8,8 +7,6 @@ const fs = require('fs');
 const { s3_delete, logger} = require("../app");
 const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
-const util = require('../services/util');
-const { Op } = require("sequelize");
 
 const createBill = async function (req, res) {
 	const body = req.body;
@@ -273,66 +270,27 @@ const getBillsDueByUser = async function(req, res) {
 	logger.info('Bill :: GetBillsDueByUser');
 	statsd.increment("GET BILLS DUE USER");
 
-	let fromDate = new Date();
 	let noOfDays = req.params.x
-	let toDate = new Date();
-	toDate.setDate(toDate.getDate() + Number(noOfDays));
-	logger.info(`Bill :: GetBillsDueByUser :: From Date: ${fromDate} To Date: ${toDate}`);
 	[err, user] = await searchByEmail(req);
 	if (err) {
 		logger.error("Bill :: GetBillsDueByUser :: User Not Found");
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
-	startTimer();
-	[err, bill] = await to(Bill.findAll({
-		where: { 
-			owner_id: user.id,
-			due_date : {
-				[Op.between]: [fromDate,toDate]
-			}
-		 }, 
-		include: [{
-			model: File,
-			as: 'attachment' // specifies how we want to be able to access our joined rows on the returned data
-		}]
-	}));
-	endTimer('SQL GET BILLS DUE BY USER')
-	if (err || !bill) {
-		logger.error('Bill :: GetBillsDueByUser ::' + err.message);
-		return ReE(res, { error: { msg: err.message } }, 400);
-	}
-	let bills = [];
-	bill.forEach((item) => {
-		item = item.toWeb();
-		if (item.attachment === null) {
-			item['attachment'] = {};
-		} else {
-			item.attachment.bill_id = undefined;
-			item.attachment.file_size = undefined;
-			item.attachment.file_type = undefined;
-			item.attachment.encoding = undefined;
-			item.attachment.checksum = undefined;
-		}
-		bills.push(item);
-	});
-
 
 	if(CONFIG.app === 'prod'){
 		let SQSMessage={
-			'user':user,
-			'billsDue':[]
+			'user':{
+				'id':user.id,
+				'email_address':user.email_address,
+				'first_name':user.first_name,
+				'last_name':user.last_name
+			},
+			'noOfDays': noOfDays
 		};
-
-		bills.forEach((item) => {
-			let billUrl = `http://${CONFIG.domain_name}/v1/bill/${item.id}`;
-			SQSMessage.billsDue.push(billUrl);
-		});
-		logger.debug(SQSMessage);
 
 		await sendMessageToSQS(SQSMessage);
 	}
-
-	logger.debug(bills);
+	logger.debug('Bill :: GetBillsDueByUser :: SQS MessagePayload ' + SQSMessage);
 	logger.info('Bill :: GetBillsDueByUser :: Successfull');
 	return ReS(res, bills, 200,'GET BILLS DUE BY USER');
 
