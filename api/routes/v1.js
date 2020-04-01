@@ -4,7 +4,7 @@ const auth = require('../services/auth');
 const UserController = require('../controllers/user.controller');
 const BillController = require('../controllers/bill.controller');
 const FileController = require('../controllers/file.controller');
-const { createBillValidator, getBillValidator, updateBillValidator, createUserValidator, fileUploadValidator, getFileValidator, validate } = require('../services/validator');
+const { createBillValidator, getBillValidator, updateBillValidator, createUserValidator, fileUploadValidator, getFileValidator,getBillsDueValidator, validate } = require('../services/validator');
 const { upload } = require("../app");
 
 //User
@@ -15,6 +15,7 @@ router.put('/user/self', createUserValidator(), validate, auth.basicAuth, UserCo
 //Bill
 router.post('/bill', createBillValidator(), validate, auth.basicAuth, BillController.createBill);
 router.get('/bills', auth.basicAuth, BillController.getBillsByUser);
+router.get('/bills/due/:x',getBillsDueValidator(), validate, auth.basicAuth, BillController.getBillsDueByUser);
 router.get('/bill/:id', getBillValidator(), validate, auth.basicAuth, BillController.getBillById);
 router.put('/bill/:id', updateBillValidator(), validate, auth.basicAuth, BillController.updateBillById);
 router.delete('/bill/:id', getBillValidator(), validate, auth.basicAuth, BillController.deleteBillById);

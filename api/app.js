@@ -18,11 +18,6 @@ const logger = log4js.getLogger();
 logger.info("app Started");
 module.exports.logger = logger;
 
-// //StatsD
-// const SDC = require('statsd-client');
-// const statsd = new SDC();
-// module.exports.statsd=statsd;
-
 /*
 Module:multer
 multer is middleware used to handle multipart form data
@@ -118,6 +113,28 @@ const s3_delete = async function (req, res, file) {
 	util.endTimer('S3 DELETE');
 }
 module.exports.s3_delete = s3_delete;
+
+//SQS Consumer
+if (CONFIG.app === 'prod') {
+	const { Consumer } = require('sqs-consumer');
+	const queueUrl = "https://sqs.us-east-1.amazonaws.com/535841642337/csye6225demo-app-SQSQueue";
+	const sqsConsumer = Consumer.create({
+		queueUrl: queueUrl,
+		handleMessage: async (message) => {
+			// do some work with `message`
+			logger.info(message);
+		}
+	});
+	sqsConsumer.on('error', (err) => {
+		logger.error(err.message);
+	});
+
+	sqsConsumer.on('processing_error', (err) => {
+		logger.error(err.message);
+	});
+
+	sqsConsumer.start();
+}
 
 const v1 = require('./routes/v1');
 const app = express();

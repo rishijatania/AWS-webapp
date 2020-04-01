@@ -9,6 +9,7 @@ const { s3_delete, logger} = require("../app");
 const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
 const util = require('../services/util');
+const { Op } = require("sequelize");
 
 const createBill = async function (req, res) {
 	const body = req.body;
@@ -265,3 +266,59 @@ const deleteFileFromDisk = function (bill) {
 	});
 }
 module.exports.deleteFileFromDisk = deleteFileFromDisk;
+
+const getBillsDueByUser = async function(req, res) {
+	const body = req.body;
+	let err, user, bill;
+	logger.info('Bill :: GetBillsDueByUser');
+	statsd.increment("GET BILLS DUE USER");
+
+	let fromDate = new Date();
+	let noOfDays = req.params.x
+	let toDate = new Date();
+	toDate.setDate(toDate.getDate() + Number(noOfDays));
+	logger.info(`Bill :: GetBillsDueByUser :: From Date: ${fromDate} To Date: ${toDate}`);
+	[err, user] = await searchByEmail(req);
+	if (err) {
+		logger.error("Bill :: GetBillsDueByUser :: User Not Found");
+		return ReE(res, { error: { msg: err.message } }, 400);
+	}
+	util.startTimer();
+	[err, bill] = await to(Bill.findAll({
+		where: { 
+			owner_id: user.id,
+			due_date : {
+				[Op.between]: [fromDate,toDate]
+			}
+		 }, 
+		include: [{
+			model: File,
+			as: 'attachment' // specifies how we want to be able to access our joined rows on the returned data
+		}]
+	}));
+	util.endTimer('SQL GET BILLS DUE BY USER')
+	if (err || !bill) {
+		logger.error('Bill :: GetBillsDueByUser ::' + err.message);
+		return ReE(res, { error: { msg: err.message } }, 400);
+	}
+	let bills = [];
+	bill.forEach((item) => {
+		item = item.toWeb();
+		if (item.attachment === null) {
+			item['attachment'] = {};
+		} else {
+			item.attachment.bill_id = undefined;
+			item.attachment.file_size = undefined;
+			item.attachment.file_type = undefined;
+			item.attachment.encoding = undefined;
+			item.attachment.checksum = undefined;
+		}
+		bills.push(item);
+	});
+	logger.debug(bills);
+	logger.info('Bill :: GetBillsDueByUser :: Successfull')
+	return ReS(res, bills, 200,'GET BILLS DUE BY USER');
+
+}
+
+module.exports.getBillsDueByUser = getBillsDueByUser;
