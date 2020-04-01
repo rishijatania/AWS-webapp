@@ -49,7 +49,7 @@ module.exports.TE = TE = function(err_message, log){ // TE stands for Throw Erro
     throw new Error(err_message);
 };
 
-module.exports.startTimer = function(){ // TE stands for Throw Error
+module.exports.startTimer = startTimer= function(){ // TE stands for Throw Error
 	startDate=new Date();
 };
 
