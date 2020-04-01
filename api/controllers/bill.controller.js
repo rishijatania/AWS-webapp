@@ -289,7 +289,7 @@ const getBillsDueByUser = async function(req, res) {
 		};
 
 		await sendMessageToSQS(SQSMessage);
-		logger.debug('Bill :: GetBillsDueByUser :: SQS MessagePayload ' + JSON.stringify(SQSMessage);
+		logger.debug('Bill :: GetBillsDueByUser :: SQS MessagePayload ' + JSON.stringify(SQSMessage));
 	}
 	
 	logger.info('Bill :: GetBillsDueByUser :: Successfull');
