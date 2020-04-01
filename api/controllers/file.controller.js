@@ -1,6 +1,6 @@
 const { User, Bill, File } = require('../models');
 const authService = require('../services/auth');
-const { to, ReE, ReS } = require('../services/util');
+const { to, ReE, ReS, startTimer, endTimer } = require('../services/util');
 const { searchByEmail } = require('./user.controller');
 const { searchBillById, deleteFileFromDisk } = require('./bill.controller');
 const os = require('os');
@@ -10,7 +10,6 @@ const CONFIG = require('../config/config');
 const { s3_upload, s3_delete, logger } = require("../app");
 const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
-const util = require('../services/util');
 
 const createFile = async function (req, res) {
 	logger.info("File :: Create");
@@ -56,9 +55,9 @@ const createFile = async function (req, res) {
 		return ReE(res, {uploaderr} , 400);
 	}
 	file.url = req.file.path;
-	util.startTimer();
+	startTimer();
 	[err, file] = await to(File.create(file));
-	util.endTimer('SQL CREATE FILE')
+	endTimer('SQL CREATE FILE')
 	if (err || !file) {
 		logger.error('File :: Create :: '+ err.message);
 		return ReE(res, { error: { msg: err.message } }, 400);
@@ -79,9 +78,9 @@ const getFileById = async function (req, res) {
 	let err, user, bill;
 	logger.info("File :: GetFileById");
 	statsd.increment("GET FILE ID");
-	util.startTimer();
+	startTimer();
 	[err, bill] = await searchBillById(req.params.id);
-	util.endTimer('SQL GET FILE')
+	endTimer('SQL GET FILE')
 	if (!bill || err) {
 		logger.error('File :: GetFileById :: Bill Not Found');
 		return ReE(res, { error: { msg: 'Bill Not Found' } }, 404);
@@ -137,9 +136,9 @@ const deleteFileById = async function (req, res) {
 		logger.error("File :: DeleteFileById :: Unauthorized : Authentication error");
 		return ReE(res, { error: { msg: "Unauthorized : Authentication error" } }, 401);
 	}
-	util.startTimer();
+	startTimer();
 	[err, file] = await to(File.destroy({ where: { id: req.params.fid, bill_id: req.params.id } }));
-	util.endTimer('SQL DELETE FILE')
+	endTimer('SQL DELETE FILE')
 	if (err) {
 		logger.error("File :: DeleteFileById :: Unauthorized : File Delete Failed from DB");
 		return ReE(res, { error: { msg: 'Database Operation Error' } }, 500);

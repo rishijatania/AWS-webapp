@@ -1,6 +1,6 @@
 const { User, Bill, File } = require('../models');
 const authService = require('../services/auth');
-const { to, ReE, ReS } = require('../services/util');
+const { to, ReE, ReS, sendMessageToSQS, startTimer, endTimer } = require('../services/util');
 const { searchByEmail } = require('./user.controller');
 const CONFIG = require('../config/config');
 const path = require('path');
@@ -10,11 +10,6 @@ const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
 const util = require('../services/util');
 const { Op } = require("sequelize");
-const aws = require('aws-sdk');
-aws.config.update({ region: CONFIG.aws_region });
-// Create an SQS service object
-const sqs = new aws.SQS();
-const queueUrl = process.env.SQS_QUEUE_URL;
 
 const createBill = async function (req, res) {
 	const body = req.body;
@@ -39,9 +34,9 @@ const createBill = async function (req, res) {
 	}
 
 	body.owner_id = user.id;
-	util.startTimer();
+	startTimer();
 	[err, bill] = await to(Bill.create(body));
-	util.endTimer('SQL CREATE BILL')
+	endTimer('SQL CREATE BILL')
 	if (err || !bill) {
 		logger.error('Bill :: Create :: Bill` creation failed');
 		return ReE(res, { error: { msg: err.message } }, 400);
@@ -65,14 +60,14 @@ const getBillsByUser = async function (req, res) {
 		logger.error("Bill :: GetBillByUser :: User Not Found");
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
-	util.startTimer();
+	startTimer();
 	[err, bill] = await to(Bill.findAll({
 		where: { owner_id: user.id }, include: [{
 			model: File,
 			as: 'attachment' // specifies how we want to be able to access our joined rows on the returned data
 		}]
 	}));
-	util.endTimer('SQL GET BILL BY USER')
+	endTimer('SQL GET BILL BY USER')
 	if (err || !bill) {
 		logger.error('Bill :: GetBillByUser ::' + err.message);
 		return ReE(res, { error: { msg: err.message } }, 400);
@@ -102,9 +97,9 @@ const getBillById = async function (req, res) {
 	let err, user, bill;
 	logger.info("Bill :: GetBillByID");
 	statsd.increment("GET BILL ID");
-	util.startTimer();
+	startTimer();
 	[err, bill] = await searchBillById(req.params.id);
-	util.endTimer('SQL GET BILL BY ID')
+	endTimer('SQL GET BILL BY ID')
 	if (!bill || err) {
 		logger.error("Bill :: GetBillByID :: Bill Not Found");
 		return ReE(res, { error: { msg: 'Bill Not Found' } }, 404);
@@ -168,9 +163,9 @@ const deleteBillById = async function (req, res) {
 		logger.error("Bill :: DeleteBillById :: Unauthorized Authentication error");
 		return ReE(res, { error: { msg: "Unauthorized : Authentication error" } }, 401);
 	}
-	util.startTimer();
+	startTimer();
 	[err, success] = await to(Bill.destroy({ where: { id: req.params.id, owner_id: user.id } }));
-	util.endTimer('SQL DELETE BILL')
+	endTimer('SQL DELETE BILL')
 	if (err || success === 0) {
 		logger.error("Bill :: DeleteBillById :: Database Operation Error");
 		return ReE(res, { error: { msg: 'Database Operation Error' } }, 500);
@@ -229,9 +224,9 @@ const updateBillById = async function (req, res) {
 	bill.amount_due = body.amount_due;
 	bill.paymentStatus = body.paymentStatus;
 	bill.categories = body.categories;
-	util.startTimer();
+	startTimer();
 	[err, success] = await to(bill.save());
-	util.endTimer('SQL UPDATE BILL')
+	endTimer('SQL UPDATE BILL')
 	if (err || !success) {
 		console.log("errpr " + err.message);
 		msg = err.message.includes('Validation error') ? err.message : 'Database Operation Error';
@@ -288,7 +283,7 @@ const getBillsDueByUser = async function(req, res) {
 		logger.error("Bill :: GetBillsDueByUser :: User Not Found");
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
-	util.startTimer();
+	startTimer();
 	[err, bill] = await to(Bill.findAll({
 		where: { 
 			owner_id: user.id,
@@ -301,7 +296,7 @@ const getBillsDueByUser = async function(req, res) {
 			as: 'attachment' // specifies how we want to be able to access our joined rows on the returned data
 		}]
 	}));
-	util.endTimer('SQL GET BILLS DUE BY USER')
+	endTimer('SQL GET BILLS DUE BY USER')
 	if (err || !bill) {
 		logger.error('Bill :: GetBillsDueByUser ::' + err.message);
 		return ReE(res, { error: { msg: err.message } }, 400);
@@ -321,20 +316,20 @@ const getBillsDueByUser = async function(req, res) {
 		bills.push(item);
 	});
 
-	let SQSMessage={
-		'id':user.id,
-		'email_address' : user.email_address,
-		'billsDueLink':[]
-	};
-
-	bills.forEach((item) => {
-		let billUrl = `http://${process.env.DOMAIN_NAME}/v1/bill/${item.id}`;
-		SQSMessage.billsDueLink.push(billUrl);
-	});
-	logger.debug(SQSMessage);
 
 	if(CONFIG.app === 'prod'){
-		sendMessageSQS(SQSMessage);
+		let SQSMessage={
+			'user':user,
+			'billsDue':[]
+		};
+
+		bills.forEach((item) => {
+			let billUrl = `http://${CONFIG.domain_name}/v1/bill/${item.id}`;
+			SQSMessage.billsDue.push(billUrl);
+		});
+		logger.debug(SQSMessage);
+
+		await sendMessageToSQS(SQSMessage);
 	}
 
 	logger.debug(bills);
@@ -344,19 +339,3 @@ const getBillsDueByUser = async function(req, res) {
 }
 
 module.exports.getBillsDueByUser = getBillsDueByUser;
-
-async function sendMessageSQS(SQSMessage) {
-	let sqsData = {
-        MessageBody: JSON.stringify(SQSMessage),
-        QueueUrl: queueUrl
-    };
-
-    // Send the order data to the SQS queue
-	let data,err;
-	[err,data] = await to(sqs.sendMessage(sqsData).promise());
-
-	if(err) {
-        return logger.error(`SQS SEND MESSAGE | ERROR: ${JSON.stringify(err)}`);
-	}
-    logger.info(`SQS SEND MESSAGE | SUCCESS: ${data.MessageId}`); 
-}
