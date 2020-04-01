@@ -117,7 +117,7 @@ module.exports.s3_delete = s3_delete;
 //SQS Consumer
 if (CONFIG.app === 'prod') {
 	const { Consumer } = require('sqs-consumer');
-	const queueUrl = "https://sqs.us-east-1.amazonaws.com/535841642337/csye6225demo-app-SQSQueue";
+	const queueUrl = process.env.SQS_QUEUE_URL;
 	const sqsConsumer = Consumer.create({
 		queueUrl: queueUrl,
 		handleMessage: async (message) => {
