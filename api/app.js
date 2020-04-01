@@ -115,24 +115,26 @@ const s3_delete = async function (req, res, file) {
 module.exports.s3_delete = s3_delete;
 
 //SQS Consumer
-const { Consumer } = require('sqs-consumer');
-const queueUrl = "https://sqs.us-east-1.amazonaws.com/535841642337/csye6225demo-app-SQSQueue";
-const sqsConsumer = Consumer.create({
-	queueUrl: queueUrl,
-	handleMessage: async (message) => {
-		// do some work with `message`
-		logger.info(message);
-	}
-});
-sqsConsumer.on('error', (err) => {
-	logger.error(err.message);
-});
+if (CONFIG.app === 'prod') {
+	const { Consumer } = require('sqs-consumer');
+	const queueUrl = "https://sqs.us-east-1.amazonaws.com/535841642337/csye6225demo-app-SQSQueue";
+	const sqsConsumer = Consumer.create({
+		queueUrl: queueUrl,
+		handleMessage: async (message) => {
+			// do some work with `message`
+			logger.info(message);
+		}
+	});
+	sqsConsumer.on('error', (err) => {
+		logger.error(err.message);
+	});
 
-sqsConsumer.on('processing_error', (err) => {
-	logger.error(err.message);
-});
+	sqsConsumer.on('processing_error', (err) => {
+		logger.error(err.message);
+	});
 
-sqsConsumer.start();
+	sqsConsumer.start();
+}
 
 const v1 = require('./routes/v1');
 const app = express();
