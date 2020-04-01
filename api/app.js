@@ -7,7 +7,6 @@ const fs = require('fs');
 const aws = require('aws-sdk');
 const multerS3 = require('multer-s3');
 const CONFIG = require('./config/config');
-const util = require('./services/util');
 const log4js = require('log4js');
 // App settings
 const { LogConfig } = require('./config/logger').log4js;
@@ -18,15 +17,17 @@ const logger = log4js.getLogger();
 logger.info("app Started");
 module.exports.logger = logger;
 
+aws.config.update({ region: CONFIG.aws_region });
+module.exports.aws = aws;
+
+const {startTimer,endTimer} = require('./services/util');
 /*
 Module:multer
 multer is middleware used to handle multipart form data
 */
 
 let s3 = new aws.S3();
-aws.config.update({ region: CONFIG.aws_region });
 const bucket = CONFIG.s3_bucket;
-
 const multer = require('multer');
 
 let upload;
@@ -76,7 +77,7 @@ module.exports.upload = upload;
 
 const s3_upload = async function (req) {
 	if (CONFIG.app === 'prod') {
-		util.startTimer();
+		startTimer();
 		const file = req.file;
 		console.log("in s3 upload");
 		let params = {
@@ -92,7 +93,7 @@ const s3_upload = async function (req) {
 			return err;
 		}
 		req.file.path = data.Location;
-		util.endTimer('S3 UPLOAD')
+		endTimer('S3 UPLOAD')
 	}
 }
 
@@ -100,7 +101,7 @@ module.exports.s3_upload = s3_upload;
 
 const s3_delete = async function (req, res, file) {
 	console.log(req.params.id + '/' + req.params.fid);
-	util.startTimer();
+	startTimer();
 	var params = {
 		Bucket: bucket,
 		Key: req.params.id + '/' + file.file_name
@@ -110,27 +111,27 @@ const s3_delete = async function (req, res, file) {
 	} catch (err) {
 		return err;
 	}
-	util.endTimer('S3 DELETE');
+	endTimer('S3 DELETE');
 }
 module.exports.s3_delete = s3_delete;
 
 //SQS Consumer
 if (CONFIG.app === 'prod') {
 	const { Consumer } = require('sqs-consumer');
-	const queueUrl = process.env.SQS_QUEUE_URL;
 	const sqsConsumer = Consumer.create({
-		queueUrl: queueUrl,
+		queueUrl: CONFIG.sqs_queue_name,
 		handleMessage: async (message) => {
 			// do some work with `message`
-			logger.info(message);
+			logger.info('SQS Consumer | Success | '+ message);
+			
 		}
 	});
 	sqsConsumer.on('error', (err) => {
-		logger.error(err.message);
+		logger.error('SQS Consumer | Error | '+ err.message);
 	});
 
 	sqsConsumer.on('processing_error', (err) => {
-		logger.error(err.message);
+		logger.error('SQS Consumer | Processing Error | ' + err.message);
 	});
 
 	sqsConsumer.start();

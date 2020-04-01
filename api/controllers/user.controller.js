@@ -1,6 +1,6 @@
 const { User }          = require('../models');
 const authService       = require('../services/auth');
-const { to, ReE, ReS, startTimer}  = require('../services/util');
+const { to, ReE, ReS, startTimer, endTimer}  = require('../services/util');
 const passwordValidator = require('password-validator');
 const validator = require('validator');
 const { logger } = require("../app");
@@ -48,9 +48,9 @@ const create = async function(req, res){
 		}
 		[err, success] = await searchByEmail(userInfo);
 		if(!success || err) {
-			util.startTimer();
+			startTimer();
 			[err, user] = await to(User.create(userInfo));
-			util.endTimer('SQL CREATE USER')
+			endTimer('SQL CREATE USER');
 			if (err) {
 				logger.error("User :: Create :: Failed");
 				return ReE(res, {error:{msg: err.message}} , 400);
@@ -77,9 +77,9 @@ const get = async function(req, res){
 	logger.info("User :: Get");
     console.log(req.email_address);
 	console.log("get function");
-	util.startTimer();
+	startTimer();
 	[err, user] = await searchByEmail(req);
-	util.endTimer('SQL GET USER')
+	endTimer('SQL GET USER')
 	statsd.increment("GET USER");
     if(err){
 		logger.error("User :: Get :: User not found");
@@ -127,9 +127,9 @@ const update = async function(req, res){
 
 	if(user){
 		user.set(data);
-		util.startTimer();
+		startTimer();
 		[err, user] = await to(user.save());
-		util.endTimer('SQL UPDATE USER')
+		endTimer('SQL UPDATE USER')
 	}
 
 	if(err){

@@ -15,4 +15,7 @@ CONFIG.db_password = process.env.DB_PSWD;
 CONFIG.file_upload_path = process.env.FILE_UPLOAD_PATH
 CONFIG.s3_bucket = process.env.S3_BUCKET
 CONFIG.aws_region = process.env.AWS_REGION
+CONFIG.domain_name = process.env.DOMAIN_NAME
+CONFIG.sqs_queue_name = process.env.SQS_QUEUE_URL
+
 module.exports = CONFIG;
