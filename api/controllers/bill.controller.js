@@ -14,7 +14,7 @@ const aws = require('aws-sdk');
 aws.config.update({ region: CONFIG.aws_region });
 // Create an SQS service object
 const sqs = new aws.SQS();
-const queueUrl = "https://sqs.us-east-1.amazonaws.com/535841642337/csye6225demo-app-SQSQueue";
+const queueUrl = process.env.SQS_QUEUE_URL;
 
 const createBill = async function (req, res) {
 	const body = req.body;
