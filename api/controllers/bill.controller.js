@@ -273,20 +273,48 @@ const getBillsDueByUser = async function(req, res) {
 	logger.info('Bill :: GetBillsDueByUser');
 	statsd.increment("GET BILLS DUE USER");
 
-	let fromDate = new Date();
 	let noOfDays = req.params.x
-	let toDate = new Date();
-	toDate.setDate(toDate.getDate() + Number(noOfDays));
-	logger.info(`Bill :: GetBillsDueByUser :: From Date: ${fromDate} To Date: ${toDate}`);
 	[err, user] = await searchByEmail(req);
 	if (err) {
 		logger.error("Bill :: GetBillsDueByUser :: User Not Found");
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
+
+	if(CONFIG.app === 'prod'){
+		let SQSMessage={
+			'user':{
+				'id':user.id,
+				'email_address':user.email_address,
+				'first_name':user.first_name,
+				'last_name':user.last_name
+			},
+			'noOfDays': noOfDays
+		};
+
+		await sendMessageToSQS(SQSMessage);
+	}
+	logger.debug('Bill :: GetBillsDueByUser :: SQS MessagePayload ' + SQSMessage);
+	logger.info('Bill :: GetBillsDueByUser :: Successfull');
+	return ReS(res, bills, 200,'GET BILLS DUE BY USER');
+
+}
+
+module.exports.getBillsDueByUser = getBillsDueByUser;
+
+const getBillsDue = async function (message){
+
+	logger.info('Bill :: GetBillsDue');
+	statsd.increment("GET BILLS DUE");
+	let fromDate = new Date();
+	let noOfDays = message.noOfDays;
+	let toDate = new Date();
+	toDate.setDate(toDate.getDate() + Number(noOfDays));
+	logger.info(`Bill :: GetBillsDue :: From Date: ${fromDate} To Date: ${toDate} For User: ${message.user.email_address}`);
+
 	startTimer();
 	[err, bill] = await to(Bill.findAll({
 		where: { 
-			owner_id: user.id,
+			owner_id: message.user.id,
 			due_date : {
 				[Op.between]: [fromDate,toDate]
 			}
@@ -296,9 +324,9 @@ const getBillsDueByUser = async function(req, res) {
 			as: 'attachment' // specifies how we want to be able to access our joined rows on the returned data
 		}]
 	}));
-	endTimer('SQL GET BILLS DUE BY USER')
+	endTimer('SQL GET BILLS DUE')
 	if (err || !bill) {
-		logger.error('Bill :: GetBillsDueByUser ::' + err.message);
+		logger.error('Bill :: GetBillsDue ::' + err.message);
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
 	let bills = [];
@@ -315,27 +343,13 @@ const getBillsDueByUser = async function(req, res) {
 		}
 		bills.push(item);
 	});
-
-
-	if(CONFIG.app === 'prod'){
-		let SQSMessage={
-			'user':user,
-			'billsDue':[]
-		};
-
-		bills.forEach((item) => {
-			let billUrl = `http://${CONFIG.domain_name}/v1/bill/${item.id}`;
-			SQSMessage.billsDue.push(billUrl);
-		});
-		logger.debug(SQSMessage);
-
-		await sendMessageToSQS(SQSMessage);
-	}
-
-	logger.debug(bills);
-	logger.info('Bill :: GetBillsDueByUser :: Successfull');
-	return ReS(res, bills, 200,'GET BILLS DUE BY USER');
-
+	message.billsDue=[];
+	bills.forEach((item) => {
+		let billUrl = `http://${CONFIG.domain_name}/v1/bill/${item.id}`;
+		message.billsDue.push(billUrl);
+	});
+	logger.debug('Bill :: GetBillsDue :: MessagePayload ' + message);
+	return message;
 }
 
-module.exports.getBillsDueByUser = getBillsDueByUser;
+module.exports.getBillsDue = getBillsDue;

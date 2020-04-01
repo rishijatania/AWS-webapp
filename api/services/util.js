@@ -7,7 +7,7 @@ const CONFIG = require('../config/config');
 // Create an SQS service object
 const sqs = new aws.SQS();
 const sns = new aws.SNS();
-
+const { getBillsDue } = require('../controllers/bill.controller');
 var startDate,endDate,seconds;
 
 module.exports.to = async (promise) => {
@@ -85,8 +85,11 @@ module.exports.sendMessageToSQS = sendMessageToSQS;
 
 
 const snsPublish = async function(message) {
+
+	let data = await getBillsDue(message);
+	
 	let params = {
-		Message: JSON.stringify(message), /* required */
+		Message: data, /* required */
   		TopicArn: CONFIG.sns_topic_arn
 	}
 	logger.debug(params);
