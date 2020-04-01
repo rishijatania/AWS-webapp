@@ -10,6 +10,11 @@ const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
 const util = require('../services/util');
 const { Op } = require("sequelize");
+const aws = require('aws-sdk');
+aws.config.update({ region: CONFIG.aws_region });
+// Create an SQS service object
+const sqs = new aws.SQS();
+const queueUrl = "https://sqs.us-east-1.amazonaws.com/535841642337/csye6225demo-app-SQSQueue";
 
 const createBill = async function (req, res) {
 	const body = req.body;
@@ -315,10 +320,57 @@ const getBillsDueByUser = async function(req, res) {
 		}
 		bills.push(item);
 	});
+
+	let SQSMessage={
+		'id':user.id,
+		'email_address' : user.email_address,
+		'billsDueLink':[]
+	};
+
+	bills.forEach((item) => {
+		let billUrl = `http://${process.env.DOMAIN_NAME}/v1/bill/${item.id}`;
+		SQSMessage.billsDueLink.push(billUrl);
+	});
+	logger.debug(SQSMessage);
+
+	if(CONFIG.app === 'prod'){
+		sendMessageSQS(SQSMessage);
+	}
+
 	logger.debug(bills);
-	logger.info('Bill :: GetBillsDueByUser :: Successfull')
+	logger.info('Bill :: GetBillsDueByUser :: Successfull');
 	return ReS(res, bills, 200,'GET BILLS DUE BY USER');
 
 }
 
 module.exports.getBillsDueByUser = getBillsDueByUser;
+
+async function sendMessageSQS(SQSMessage) {
+	let sqsData = {
+        MessageAttributes: {
+          "id": {
+            DataType: "String",
+            StringValue: SQSMessage.id
+		  },
+		  "email_address	": {
+            DataType: "String",
+            StringValue: SQSMessage.email_address
+          },
+          "itemPrice": {
+            DataType: "String",
+            StringListValues: SQSMessage.billsDueLink
+          }
+        },
+        MessageBody: JSON.stringify(SQSMessage),
+        QueueUrl: queueUrl
+    };
+
+    // Send the order data to the SQS queue
+	let data,err;
+	[err,data] = await to(sqs.sendMessage(sqsData).promise());
+
+	if(err) {
+        return logger.error(`OrdersSvc | ERROR: ${err}`);
+	}
+    logger.info(`OrdersSvc | SUCCESS: ${data.MessageId}`); 
+}
