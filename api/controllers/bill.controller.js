@@ -7,7 +7,7 @@ const fs = require('fs');
 const { s3_delete, logger} = require("../app");
 const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
-
+ 
 const createBill = async function (req, res) {
 	const body = req.body;
 
