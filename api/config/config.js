@@ -17,5 +17,6 @@ CONFIG.s3_bucket = process.env.S3_BUCKET
 CONFIG.aws_region = process.env.AWS_REGION
 CONFIG.domain_name = process.env.DOMAIN_NAME
 CONFIG.sqs_queue_name = process.env.SQS_QUEUE_URL
+CONFIG.sns_topic_arn = process.env.SNS_TOPIC_ARN
 
 module.exports = CONFIG;

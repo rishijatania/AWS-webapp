@@ -20,7 +20,7 @@ module.exports.logger = logger;
 aws.config.update({ region: CONFIG.aws_region });
 module.exports.aws = aws;
 
-const {startTimer,endTimer} = require('./services/util');
+const {startTimer,endTimer,snsPublish} = require('./services/util');
 /*
 Module:multer
 multer is middleware used to handle multipart form data
@@ -122,8 +122,8 @@ if (CONFIG.app === 'prod') {
 		queueUrl: CONFIG.sqs_queue_name,
 		handleMessage: async (message) => {
 			// do some work with `message`
-			logger.info('SQS Consumer | Success | '+ message);
-			
+			logger.debug('SQS Consumer | Payload | '+ message.Body);
+			snsPublish(message.Body);
 		}
 	});
 	sqsConsumer.on('error', (err) => {

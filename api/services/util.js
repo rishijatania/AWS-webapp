@@ -6,6 +6,7 @@ const statsd = new SDC({host: 'localhost', port: 8125});
 const CONFIG = require('../config/config');
 // Create an SQS service object
 const sqs = new aws.SQS();
+const sns = new aws.SNS();
 
 var startDate,endDate,seconds;
 
@@ -72,9 +73,31 @@ const sendMessageToSQS= async function sendMessageToSQS(SQSMessage) {
 	[err,data] = await to(sqs.sendMessage(sqsData).promise());
 
 	if(err) {
-        return logger.error(`SQS SEND MESSAGE | ERROR: ${JSON.stringify(err)}`);
+		logger.error(`SQS SEND MESSAGE | ERROR: ${JSON.stringify(err)}`);
+		return 
+		//[err,undefined];
 	}
-    logger.info(`SQS SEND MESSAGE | SUCCESS: ${data.MessageId}`); 
+	logger.info(`SQS SEND MESSAGE | SUCCESS: ${data.MessageId}`);
+	// return [undefined,data];
 }
 
 module.exports.sendMessageToSQS = sendMessageToSQS;
+
+
+const snsPublish = async function(message) {
+	let params = {
+		Message: JSON.stringify(message), /* required */
+  		TopicArn: CONFIG.sns_topic_arn
+	}
+	logger.debug(params);
+	// Send the order data to SNS
+	let data,err;
+	[err,data] = await to(sns.publish(params).promise());
+
+	if(err) {
+        return logger.error(`SNS PUBLISH MESSAGE | ERROR: ${JSON.stringify(err)}`);
+	}
+    logger.info(`SNS PUBLISH MESSAGE | SUCCESS: ${data.MessageId}`); 
+
+}
+module.exports.snsPublish = snsPublish;
