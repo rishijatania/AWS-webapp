@@ -6,7 +6,6 @@ const validator = require('validator');
 const { logger } = require("../app");
 const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
-const util = require('../services/util');
 
 const create = async function(req, res){
 	startTimer();

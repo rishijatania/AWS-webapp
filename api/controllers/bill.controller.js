@@ -1,5 +1,4 @@
-const { User, Bill, File } = require('../models');
-const authService = require('../services/auth');
+const { Bill, File } = require('../models');
 const { to, ReE, ReS, sendMessageToSQS, startTimer, endTimer } = require('../services/util');
 const { searchByEmail } = require('./user.controller');
 const CONFIG = require('../config/config');
@@ -8,8 +7,6 @@ const fs = require('fs');
 const { s3_delete, logger} = require("../app");
 const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
-const util = require('../services/util');
-const { Op } = require("sequelize");
 
 const createBill = async function (req, res) {
 	const body = req.body;
@@ -300,56 +297,3 @@ const getBillsDueByUser = async function(req, res) {
 }
 
 module.exports.getBillsDueByUser = getBillsDueByUser;
-
-const getBillsDue = async function (message){
-
-	logger.info('Bill :: GetBillsDue');
-	statsd.increment("GET BILLS DUE");
-	let fromDate = new Date();
-	let noOfDays = message.noOfDays;
-	let toDate = new Date();
-	toDate.setDate(toDate.getDate() + Number(noOfDays));
-	logger.info(`Bill :: GetBillsDue :: From Date: ${fromDate} To Date: ${toDate} For User: ${message.user.email_address}`);
-
-	startTimer();
-	[err, bill] = await to(Bill.findAll({
-		where: { 
-			owner_id: message.user.id,
-			due_date : {
-				[Op.between]: [fromDate,toDate]
-			}
-		 }, 
-		include: [{
-			model: File,
-			as: 'attachment' // specifies how we want to be able to access our joined rows on the returned data
-		}]
-	}));
-	endTimer('SQL GET BILLS DUE')
-	if (err || !bill) {
-		logger.error('Bill :: GetBillsDue ::' + err.message);
-		return ReE(res, { error: { msg: err.message } }, 400);
-	}
-	let bills = [];
-	bill.forEach((item) => {
-		item = item.toWeb();
-		if (item.attachment === null) {
-			item['attachment'] = {};
-		} else {
-			item.attachment.bill_id = undefined;
-			item.attachment.file_size = undefined;
-			item.attachment.file_type = undefined;
-			item.attachment.encoding = undefined;
-			item.attachment.checksum = undefined;
-		}
-		bills.push(item);
-	});
-	message.billsDue=[];
-	bills.forEach((item) => {
-		let billUrl = `http://${CONFIG.domain_name}/v1/bill/${item.id}`;
-		message.billsDue.push(billUrl);
-	});
-	logger.debug('Bill :: GetBillsDue :: MessagePayload ' + message);
-	return message;
-}
-
-module.exports.getBillsDue = getBillsDue;
