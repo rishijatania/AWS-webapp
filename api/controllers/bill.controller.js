@@ -370,7 +370,7 @@ async function sendMessageSQS(SQSMessage) {
 	[err,data] = await to(sqs.sendMessage(sqsData).promise());
 
 	if(err) {
-        return logger.error(`OrdersSvc | ERROR: ${err}`);
+        return logger.error(`SQS SEND MESSAGE | ERROR: ${JSON.stringify(err)}`);
 	}
-    logger.info(`OrdersSvc | SUCCESS: ${data.MessageId}`); 
+    logger.info(`SQS SEND MESSAGE | SUCCESS: ${data.MessageId}`); 
 }
