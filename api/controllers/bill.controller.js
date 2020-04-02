@@ -332,9 +332,13 @@ const getBillsDue = async function(req,user) {
 
 	if(CONFIG.app === 'prod'){
 		let SQSMessage={
-			'user':user,
+			'user':{},
 			'billsDue':[]
 		};
+		SQSMessage.user.id=user.id;
+		SQSMessage.user.email_address=user.email_address;
+		SQSMessage.user.first_name=user.first_name;
+		SQSMessage.user.last_name=user.last_name;
 
 		bills.forEach((item) => {
 			let billUrl = `http://${CONFIG.domain_name}/v1/bill/${item.id}`;
