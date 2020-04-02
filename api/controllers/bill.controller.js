@@ -302,7 +302,15 @@ const getBillsDue = async function(req,user) {
 			owner_id: user.id,
 			due_date : {
 				[Op.between]: [fromDate,toDate]
-			}
+			},
+			[Op.or] : [
+				{
+					paymentStatus : "due"
+				},
+				{
+					paymentStatus : "past_due"
+				}
+			]
 		 }, 
 		include: [{
 			model: File,
@@ -333,7 +341,8 @@ const getBillsDue = async function(req,user) {
 	if(CONFIG.app === 'prod'){
 		let SQSMessage={
 			'user':{},
-			'billsDue':[]
+			'billsDue':[],
+			'noOfDays':noOfDays
 		};
 		SQSMessage.user.id=user.id;
 		SQSMessage.user.email_address=user.email_address;
