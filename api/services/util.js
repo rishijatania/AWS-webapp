@@ -85,7 +85,7 @@ module.exports.sendMessageToSQS = sendMessageToSQS;
 
 const snsPublish = async function(message) {
 	let params = {
-		Message: message, /* required */
+		Message: JSON.stringify(message), /* required */
   		TopicArn: CONFIG.sns_topic_arn
 	}
 	logger.debug(params);
