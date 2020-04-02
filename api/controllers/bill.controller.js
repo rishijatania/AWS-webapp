@@ -1,4 +1,5 @@
 const { User, Bill, File } = require('../models');
+const authService = require('../services/auth');
 const { to, ReE, ReS, sendMessageToSQS, startTimer, endTimer } = require('../services/util');
 const { searchByEmail } = require('./user.controller');
 const CONFIG = require('../config/config');
@@ -7,7 +8,9 @@ const fs = require('fs');
 const { s3_delete, logger} = require("../app");
 const SDC = require('statsd-client');
 const statsd = new SDC({host: 'localhost', port: 8125});
- 
+const util = require('../services/util');
+const { Op } = require("sequelize");
+
 const createBill = async function (req, res) {
 	const body = req.body;
 
@@ -278,15 +281,12 @@ const getBillsDueByUser = async function(req, res) {
 	}
 	
 	if(CONFIG.app === 'prod'){
-		let SQSMessage = {
-			'user':{
-				'id':this.user.id,
-				'email_address':this.user.email_address,
-				'first_name':this.user.first_name,
-				'last_name':this.user.last_name
-			},
-			'noOfDays': this.noOfDays
-		};
+		let SQSMessage = {}
+		SQSMessage.user.id = user.id;
+		SQSMessage.user.email_address = user.email_address;
+		SQSMessage.user.first_name = user.first_name;
+		SQSMessage.user.last_name = user.last_name;
+		SQSMessage.noOfDays = noOfDays;
 
 		await sendMessageToSQS(SQSMessage);
 		logger.debug('Bill :: GetBillsDueByUser :: SQS MessagePayload ' + JSON.stringify(SQSMessage));
