@@ -1,4 +1,4 @@
-const { Bill, File } = require('../models');
+const { User, Bill, File } = require('../models');
 const { to, ReE, ReS, sendMessageToSQS, startTimer, endTimer } = require('../services/util');
 const { searchByEmail } = require('./user.controller');
 const CONFIG = require('../config/config');
@@ -272,7 +272,7 @@ const getBillsDueByUser = async function(req, res) {
 
 	let noOfDays = req.params.x
 	[err, user] = await searchByEmail(req);
-	if (err || !user) {
+	if (err) {
 		logger.error("Bill :: GetBillsDueByUser :: User Not Found");
 		return ReE(res, { error: { msg: err.message } }, 400);
 	}
